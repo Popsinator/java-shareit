@@ -2,11 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.Data;
 import ru.practicum.shareit.requests.ItemRequest;
-import ru.practicum.shareit.user.User;
-
-/**
- * // TODO .
- */
 @Data
 public class Item {
 

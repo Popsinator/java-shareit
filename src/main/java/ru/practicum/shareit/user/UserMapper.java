@@ -1,8 +1,5 @@
 package ru.practicum.shareit.user;
 
-import lombok.Data;
-
-@Data
 public class UserMapper {
 
     public UserDto toUserDtoWithoutName(User user) {//Dto для обновления email

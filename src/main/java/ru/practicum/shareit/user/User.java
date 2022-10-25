@@ -4,9 +4,6 @@ import lombok.Data;
 
 import java.util.Objects;
 
-/**
- * // TODO .
- */
 @Data
 public class User {
 

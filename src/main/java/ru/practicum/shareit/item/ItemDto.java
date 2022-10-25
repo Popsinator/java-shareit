@@ -3,9 +3,6 @@ package ru.practicum.shareit.item;
 import lombok.Data;
 import ru.practicum.shareit.requests.ItemRequest;
 
-/**
- * // TODO .
- */
 @Data
 public class  ItemDto {
 
