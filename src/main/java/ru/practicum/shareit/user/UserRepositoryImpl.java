@@ -56,7 +56,7 @@ public class UserRepositoryImpl implements UserRepository {
             userUpdate = userMapper.toDtoUserWithoutName(userDto);
             checkUser(userUpdate);
         } else
-            if(user.getEmail() == null) {
+            if (user.getEmail() == null) {
             UserDto userDto = userMapper.toUserDtoWithoutEmail(user);
             userDto.setEmail(usersStorage.get(user.getId()).getEmail());
             userUpdate = userMapper.toDtoUserWithoutEmail(userDto);

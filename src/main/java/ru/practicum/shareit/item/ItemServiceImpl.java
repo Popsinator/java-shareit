@@ -24,9 +24,10 @@ class ItemServiceImpl implements ItemService {
 
     @Override
     public Item updateItem(Item item, int itemId, Integer userId) {
-        if(userId == null) {
+        if (userId == null) {
             throw new EmptyHeaderUserId("Отсутствует заголовок 'X-Sharer-User-Id'");
-        } else if(!Objects.equals(ItemRepositoryImpl.getItemStorage().get(itemId).getOwner(), userId)) {
+        } else
+            if (!Objects.equals(ItemRepositoryImpl.getItemStorage().get(itemId).getOwner(), userId)) {
             throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         item.setId(itemId);
@@ -48,7 +49,7 @@ class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<Item> findItemsOnDescription(String text) {
-        if(text.isEmpty()) {
+        if (text.isEmpty()) {
             List<Item> empty = new ArrayList<>();
             return empty;
         }
