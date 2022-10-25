@@ -16,13 +16,19 @@ import java.util.stream.Collectors;
 @Component
 public class ItemRepositoryImpl implements ItemRepository {
 
-    private static final Map<Integer, Item> itemStorage = new HashMap<>();
+    private final Map<Integer, Item> itemStorage = new HashMap<>();
 
     private static int identificator = 0;
 
-    private ItemMapper itemMapper = new ItemMapper();
+    private ItemMapper itemMapper = new ItemMapper(itemStorage);
 
-    public static Map<Integer, Item> getItemStorage() {
+    private UserRepositoryImpl userRepository;
+
+    public ItemRepositoryImpl(UserRepositoryImpl userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public Map<Integer, Item> getItemStorage() {
         return itemStorage;
     }
 
@@ -83,7 +89,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner() == 0) {
             throw new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец");
         } else
-            if (!UserRepositoryImpl.getUsersStorage().containsKey(item.getOwner())) {
+            if (!userRepository.getUsersStorage().containsKey(item.getOwner())) {
             throw new NotFoundOwnerItemException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }

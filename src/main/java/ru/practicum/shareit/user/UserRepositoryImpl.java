@@ -13,12 +13,10 @@ import java.util.Map;
 @Component
 public class UserRepositoryImpl implements UserRepository {
 
-    private static final Map<Integer, User> usersStorage = new HashMap<>();
+    private final Map<Integer, User> usersStorage = new HashMap<>();
     private static int id = 0;
 
-    private UserMapper userMapper = new UserMapper();
-
-    public static Map<Integer, User> getUsersStorage() {
+    public Map<Integer, User> getUsersStorage() {
         return usersStorage;
     }
 
@@ -32,7 +30,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     public static void setId(int id) {
-        UserRepositoryImpl.id = id;
+        UserRepositoryImpl.id = id + 1;
     }
 
     @Override
@@ -48,7 +46,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User createUser(User user) {
         checkUser(user);
-        setId(getId() + 1);
+        setId(getId());
         user.setId(id);
         usersStorage.put(id, user);
         return user;
@@ -59,15 +57,14 @@ public class UserRepositoryImpl implements UserRepository {
         user.setId(userId);
         User userUpdate;
         if (user.getName() == null) {
-            UserDto userDto = userMapper.toUserDtoWithoutName(user);
+            UserDto userDto = UserMapper.toUserDtoWithoutName(user);
             userDto.setName(usersStorage.get(user.getId()).getName());
-            userUpdate = userMapper.toDtoUserWithoutName(userDto);
+            userUpdate = UserMapper.toDtoUserWithoutName(userDto);
             checkUser(userUpdate);
-        } else
-            if (user.getEmail() == null) {
-            UserDto userDto = userMapper.toUserDtoWithoutEmail(user);
+        } else if (user.getEmail() == null) {
+            UserDto userDto = UserMapper.toUserDtoWithoutEmail(user);
             userDto.setEmail(usersStorage.get(user.getId()).getEmail());
-            userUpdate = userMapper.toDtoUserWithoutEmail(userDto);
+            userUpdate = UserMapper.toDtoUserWithoutEmail(userDto);
         } else {
             userUpdate = user;
             checkUser(userUpdate);

@@ -12,9 +12,9 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-class ItemServiceImpl implements ItemService {
+public class ItemServiceImpl implements ItemService {
 
-    private final ItemRepository repository;
+    private final ItemRepositoryImpl repository;
 
     @Override
     public Item createItem(Item item, int userId) {
@@ -27,7 +27,7 @@ class ItemServiceImpl implements ItemService {
         if (userId == null) {
             throw new EmptyHeaderUserId("Отсутствует заголовок 'X-Sharer-User-Id'");
         } else
-            if (!Objects.equals(ItemRepositoryImpl.getItemStorage().get(itemId).getOwner(), userId)) {
+            if (!Objects.equals(repository.getItemStorage().get(itemId).getOwner(), userId)) {
             throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         item.setId(itemId);
