@@ -1,8 +1,5 @@
 package ru.practicum.shareit.item;
 
-import com.fasterxml.jackson.annotation.JacksonInject;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.Map;
 
 public class ItemMapper {
