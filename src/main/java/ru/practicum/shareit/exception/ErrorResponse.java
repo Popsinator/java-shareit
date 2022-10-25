@@ -5,9 +5,9 @@ import lombok.Data;
 @Data
 public class ErrorResponse {
 
-    String Error;
+    String error;
 
     public ErrorResponse(String error) {
-        this.Error = error;
+        this.error = error;
     }
 }

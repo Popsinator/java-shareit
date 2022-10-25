@@ -68,6 +68,8 @@ public class ItemRepositoryImpl implements ItemRepository {
                 .filter(y -> y.getAvailable() == true)
                 .collect(Collectors.toList());
     }
+
+
     @Override
     public void checkItem(Item item) {
         if(Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner() == 0) {
