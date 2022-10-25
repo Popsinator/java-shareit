@@ -26,10 +26,18 @@ public class ItemRepositoryImpl implements ItemRepository {
         return itemStorage;
     }
 
+    public static int getIdentificator() {
+        return identificator;
+    }
+
+    public static void setIdentificator(int identificator) {
+        ItemRepositoryImpl.identificator = identificator + 1;
+    }
+
     @Override
     public Item createItem(Item item) {
         checkItem(item);
-        ItemRepositoryImpl.identificator = ItemRepositoryImpl.identificator + 1;
+        setIdentificator(getIdentificator());
         item.setId(identificator);
         itemStorage.put(identificator, item);
         return item;

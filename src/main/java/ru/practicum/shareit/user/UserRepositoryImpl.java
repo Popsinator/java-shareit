@@ -27,6 +27,14 @@ public class UserRepositoryImpl implements UserRepository {
         return usersStorage.get(userId);
     }
 
+    public static int getId() {
+        return id;
+    }
+
+    public static void setId(int id) {
+        UserRepositoryImpl.id = id;
+    }
+
     @Override
     public Collection<User> findAllUsers() {
         return usersStorage.values();
@@ -40,7 +48,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User createUser(User user) {
         checkUser(user);
-        UserRepositoryImpl.id = UserRepositoryImpl.id + 1;
+        setId(getId() + 1);
         user.setId(id);
         usersStorage.put(id, user);
         return user;
