@@ -17,18 +17,9 @@ public class UserMapper {
     }
 
     public User toDtoUserWithoutEmail(UserDto userDto) {//Создание пользователя из Dto
-        return new User(
-                userDto.getId(),
-                userDto.getName(),
-                userDto.getEmail()
-        );
+        return new User(userDto.getId(), userDto.getName(), userDto.getEmail());
     }
-
-    public User toDtoUserWithoutName(UserDto userDto) {//Создание пользователя из Dto
-        return new User(
-                userDto.getId(),
-                userDto.getName(),
-                userDto.getEmail()
-        );
+    public User toDtoUserWithoutName(UserDto userDto) {
+        return new User(userDto.getId(), userDto.getName(), userDto.getEmail());
     }
 }
