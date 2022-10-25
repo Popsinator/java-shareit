@@ -29,7 +29,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Item createItem(Item item) {
         checkItem(item);
-        identificator = identificator + 1;
+        ItemRepositoryImpl.identificator = ItemRepositoryImpl.identificator + 1;
         item.setId(identificator);
         itemStorage.put(identificator, item);
         return item;
