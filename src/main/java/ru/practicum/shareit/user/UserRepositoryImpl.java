@@ -13,10 +13,10 @@ import java.util.Map;
 @Component
 public class UserRepositoryImpl implements UserRepository {
 
-    private static final Map<Integer, User> usersStorage = new HashMap<>();//Хранилище пользователей
-    private static int id = 0;//Id для идентификации пользователей
+    private static final Map<Integer, User> usersStorage = new HashMap<>();
+    private static int id = 0;
 
-    private UserMapper userMapper = new UserMapper();//Объект для маппинга
+    private UserMapper userMapper = new UserMapper();
 
     public static Map<Integer, User> getUsersStorage() {
         return usersStorage;
@@ -38,8 +38,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User createUser(User user) {//Создание пользователей
-        checkUser(user);//Проверка email
+    public User createUser(User user) {
+        checkUser(user);
         id++;
         user.setId(id);
         usersStorage.put(id, user);
@@ -50,16 +50,16 @@ public class UserRepositoryImpl implements UserRepository {
     public User updateUser(User user, int userId) {
         user.setId(userId);
         User userUpdate;
-        if (user.getName() == null) {//Для обновления email
+        if (user.getName() == null) {
             UserDto userDto = userMapper.toUserDtoWithoutName(user);
             userDto.setName(usersStorage.get(user.getId()).getName());
             userUpdate = userMapper.toDtoUserWithoutName(userDto);
             checkUser(userUpdate);
-        } else if(user.getEmail() == null) {//Для обновления name
+        } else if(user.getEmail() == null) {
             UserDto userDto = userMapper.toUserDtoWithoutEmail(user);
             userDto.setEmail(usersStorage.get(user.getId()).getEmail());
             userUpdate = userMapper.toDtoUserWithoutEmail(userDto);
-        } else {//Для обновления email и name
+        } else {
             userUpdate = user;
             checkUser(userUpdate);
         }

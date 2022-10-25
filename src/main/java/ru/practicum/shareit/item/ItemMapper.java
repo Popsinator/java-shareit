@@ -2,7 +2,7 @@ package ru.practicum.shareit.item;
 
 public class ItemMapper {
 
-    public ItemDto toItemDto(Item item) {//Dto для обновления name
+    public ItemDto toItemDto(Item item) {
         return new ItemDto(
                 item.getName() != null ? item.getName() : null,
                 item.getDescription() != null ? item.getDescription() : null,
@@ -12,7 +12,7 @@ public class ItemMapper {
         );
     }
 
-    public Item toDtoItem(ItemDto itemDto, int itemId) {//Создание вещи из Dto
+    public Item toDtoItem(ItemDto itemDto, int itemId) {
         return new Item(
                 itemDto.getName() == null ? ItemRepositoryImpl.getItemStorage().get(itemId).getName()
                         : itemDto.getName(),
