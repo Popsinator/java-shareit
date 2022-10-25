@@ -29,7 +29,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Item createItem(Item item) {
         checkItem(item);
-        identificator++;
+        identificator = identificator + 1;
         item.setId(identificator);
         itemStorage.put(identificator, item);
         return item;
@@ -57,7 +57,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Collection<Item> searchAllItemUser(Integer userId) {
         return itemStorage.values().stream()
-                .filter(x -> x.getOwner() == userId)
+                .filter(x -> Objects.equals(x.getOwner(), userId))
                 .collect(Collectors.toList());
     }
 

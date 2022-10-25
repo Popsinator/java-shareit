@@ -40,7 +40,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User createUser(User user) {
         checkUser(user);
-        id++;
+        id = id + 1;
         user.setId(id);
         usersStorage.put(id, user);
         return user;
