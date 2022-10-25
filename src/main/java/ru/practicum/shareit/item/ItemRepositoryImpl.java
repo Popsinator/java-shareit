@@ -72,10 +72,10 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public void checkItem(Item item) {
-        if(Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner() == 0) {
+        if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner() == 0) {
             throw new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец");
         } else
-            if(!UserRepositoryImpl.getUsersStorage().containsKey(item.getOwner())) {
+            if (!UserRepositoryImpl.getUsersStorage().containsKey(item.getOwner())) {
             throw new NotFoundOwnerItemException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }
