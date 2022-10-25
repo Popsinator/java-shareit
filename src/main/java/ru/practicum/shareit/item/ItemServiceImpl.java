@@ -13,7 +13,9 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 class ItemServiceImpl implements ItemService {
+
     private final ItemRepository repository;
+
     @Override
     public Item createItem(Item item, int userId) {
         item.setOwner(userId);
@@ -33,11 +35,14 @@ class ItemServiceImpl implements ItemService {
 
     @Override
     public Item getItem(int itemId) {
+
         return repository.getItem(itemId);
+
     }
 
     @Override
     public Collection<Item> getItems(Integer userId) {
+
         return repository.searchAllItemUser(userId);
     }
 
@@ -49,7 +54,6 @@ class ItemServiceImpl implements ItemService {
         }
         return repository.searchAllItemsOnDescription(text);
     }
-
 
     @Override
     public void deleteItem(int itemId) {

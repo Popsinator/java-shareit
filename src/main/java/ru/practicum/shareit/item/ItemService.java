@@ -12,7 +12,7 @@ public interface ItemService {
 
     Collection<Item> getItems(Integer userId);
 
-    Collection<Item> findItemsOnDescription( String text);
+    Collection<Item> findItemsOnDescription(String text);
 
     void deleteItem(int itemId);
 }

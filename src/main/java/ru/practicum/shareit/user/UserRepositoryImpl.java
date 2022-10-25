@@ -23,17 +23,17 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User getUser(int userId) {//Получение пользователя
+    public User getUser(int userId) {
         return usersStorage.get(userId);
     }
 
     @Override
-    public Collection<User> findAllUsers() {//Получение пользователя
+    public Collection<User> findAllUsers() {
         return usersStorage.values();
     }
 
     @Override
-    public void deleteUser(int userId) {//Удаление пользователя
+    public void deleteUser(int userId) {
         usersStorage.remove(userId);
     }
 

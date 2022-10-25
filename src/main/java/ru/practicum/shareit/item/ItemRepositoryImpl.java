@@ -9,6 +9,7 @@ import ru.practicum.shareit.user.UserRepositoryImpl;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Data
@@ -21,11 +22,13 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     private ItemMapper itemMapper = new ItemMapper();
 
-    public static Map<Integer, Item> getItemStorage() {return itemStorage;}
+    public static Map<Integer, Item> getItemStorage() {
+        return itemStorage;
+    }
 
     @Override
     public Item createItem(Item item) {
-        checkItem(item);//Проверка email
+        checkItem(item);
         identificator++;
         item.setId(identificator);
         itemStorage.put(identificator, item);
@@ -65,11 +68,9 @@ public class ItemRepositoryImpl implements ItemRepository {
                 .filter(y -> y.getAvailable() == true)
                 .collect(Collectors.toList());
     }
-
     @Override
     public void checkItem(Item item) {
-        if(item.getName() == "" || item.getDescription() == null || item.getAvailable() == null
-        || item.getOwner() == 0) {
+        if(Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner() == 0) {
             throw new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец");
         } else if(!UserRepositoryImpl.getUsersStorage().containsKey(item.getOwner())) {
             throw new NotFoundOwnerItemException(String.format(
