@@ -53,6 +53,6 @@ CREATE TABLE IF NOT EXISTS comments
     item_id         BIGINT                                  NOT NULL,
     author_id       BIGINT                                  NOT NULL,
     CONSTRAINT pk_comment PRIMARY KEY (id),
-    CONSTRAINT fk_itemId FOREIGN KEY (item_id) REFERENCES items (id),
+    CONSTRAINT fk_itemIdCom FOREIGN KEY (item_id) REFERENCES items (id),
     CONSTRAINT fk_authorId FOREIGN KEY (author_id) REFERENCES users (id)
 );
