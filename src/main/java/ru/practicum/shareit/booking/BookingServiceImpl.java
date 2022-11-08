@@ -47,8 +47,7 @@ public class BookingServiceImpl implements BookingService {
         if (approved == null) {
             throw new InvalidStateBookingException("Отсутствует статус в заголовке");
         } else if (itemService.getItem(existBooking.getItemId(), userId).getOwner() != userId) {
-            throw new InvalidHeaderUserId
-                    ("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
+            throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         } else if (existBooking.getStatus().equals(Status.APPROVED)) {
             throw new InvalidPatchBookingException("Бронирование уже на статусе APPROVED");
         } else if (approved.equals("true")) {
