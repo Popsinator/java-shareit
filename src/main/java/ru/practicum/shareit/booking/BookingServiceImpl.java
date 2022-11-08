@@ -25,27 +25,20 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto createBooking(int userId, Booking booking) {
         LocalDateTime real = LocalDateTime.now();
         if (!itemService.getItem(booking.getItemId(), userId).getAvailable()) {
-            throw new ItemIdStatusUnavailableException(String.format
-                    ("Вещь с id %s недоступна для бронирования", booking.getItemId()));
+            throw new ItemIdStatusUnavailableException(String.format("Вещь с id %s недоступна для бронирования", booking.getItemId()));
         } else if (userService.findAllUsers().stream().noneMatch(x -> x.getId() == userId)) {
-            throw new NotFoundObjectException(String.format(
-                    "Владельца с идентификатором %s не существует.", userId));
+            throw new NotFoundObjectException(String.format("Владельца с идентификатором %s не существует.", userId));
         } else if (!itemService.checkItemId(booking.getItemId())) {
-            throw new NotFoundObjectException(String.format(
-                    "Вещи с идентификатором %s не существует.", booking.getItemId()));
+            throw new NotFoundObjectException(String.format("Вещи с идентификатором %s не существует.", booking.getItemId()));
         } else if ((booking.getEnd().isBefore(booking.getStart())
                 || booking.getStart().isBefore(real) || booking.getEnd().isBefore(real)) && booking.getId() == 0) {
-            throw new DateTimeBookingException(
-                    "Даты бронирования некорректно заданы");
+            throw new DateTimeBookingException("Даты бронирования некорректно заданы");
         } else if (itemService.getItem(booking.getItemId(), userId).getOwner() == userId) {
-            throw new InvalidHeaderUserId
-                    ("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
+            throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         booking.setBookerId(userId);
         booking.setStatus(Status.WAITING);
-        return BookingMapper.toBookingDto(repository.save(booking),
-                userService.getUser(booking.getBookerId()),
-                itemService.getItem(booking.getItemId(), userId));
+        return BookingMapper.toBookingDto(repository.save(booking), userService.getUser(booking.getBookerId()), itemService.getItem(booking.getItemId(), userId));
     }
 
     @Override

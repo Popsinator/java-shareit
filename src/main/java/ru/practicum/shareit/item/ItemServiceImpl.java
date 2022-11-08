@@ -37,8 +37,7 @@ public class ItemServiceImpl implements ItemService {
         if (userId == null) {
             throw new EmptyHeaderUserId("Отсутствует заголовок 'X-Sharer-User-Id'");
         } else if (!Objects.equals(repository.findItemByIdEquals(itemId).getOwner(), userId)) {
-            throw new InvalidHeaderUserId
-                    ("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
+            throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         Item itemInStorage = getItem(itemId, userId);
         Item itemUpdate = ItemMapper.toDtoItem(ItemMapper.toItemDto(item), itemInStorage);
@@ -74,8 +73,7 @@ public class ItemServiceImpl implements ItemService {
             if (comments.size() != 0) {
                 for (Comment comment : comments) {
                     if (comment.getText() != null) {
-                        send.getComments().add(ItemMapper.toDtoComment
-                                (comment, userService.getUser(comment.getAuthorId()).getName(), ""));
+                        send.getComments().add(ItemMapper.toDtoComment(comment, userService.getUser(comment.getAuthorId()).getName(), ""));
                     }
                 }
             }
@@ -89,8 +87,7 @@ public class ItemServiceImpl implements ItemService {
         if (comments.size() != 0) {
             for (Comment comment : comments) {
                 if (comment.getText() != null) {
-                    send.getComments().add(ItemMapper.toDtoComment
-                            (comment, userService.getUser(comment.getAuthorId()).getName(), ""));
+                    send.getComments().add(ItemMapper.toDtoComment(comment, userService.getUser(comment.getAuthorId()).getName(), ""));
                 }
             }
         }
@@ -170,8 +167,7 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         if (flag) {
-            throw new NotBookingForUserException(String.format
-                    ("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
+            throw new NotBookingForUserException(String.format("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
         }
         comment.setAuthorId(userId);
         comment.setItemId(itemId);
