@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 
 import java.util.Collection;
 
@@ -9,12 +10,18 @@ import java.util.Collection;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
-
     private final ItemService itemService;
 
     @PostMapping()
     public Item create(@RequestHeader("X-Sharer-User-Id") int userId, @RequestBody Item item) {
         return itemService.createItem(item, userId);
+    }
+
+    @PostMapping(path = "/{itemId}/comment")
+    public CommentDto addComments(@RequestHeader("X-Sharer-User-Id") int userId,
+                                  @RequestBody Comment comment,
+                                  @PathVariable String itemId) {
+        return itemService.createComment(comment, userId, Integer.parseInt(itemId));
     }
 
     @PatchMapping(path = "/{itemId}")
@@ -24,17 +31,18 @@ public class ItemController {
     }
 
     @GetMapping(path = "/{itemId}")
-    public Item getItemOnItemId(@PathVariable String itemId) {
-        return itemService.getItem(Integer.parseInt(itemId));
+    public Item getItemOnItemId(@PathVariable String itemId,
+                                @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemService.getItem(Integer.parseInt(itemId), userId);
     }
 
     @GetMapping
     public Collection<Item> getAllItemOnUserId(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return itemService.getItems(userId);
+        return itemService.getAllItems(userId);
     }
 
     @GetMapping(path = "/search")
-    public Collection<Item> getAllItemOnUserId(@RequestParam String text) {
+    public Collection<Item> getAllItemOnText(@RequestParam String text) {
         return itemService.findItemsOnDescription(text);
     }
 

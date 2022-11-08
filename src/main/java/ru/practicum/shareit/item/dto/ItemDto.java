@@ -1,19 +1,18 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.dto;
 
 import lombok.Data;
-import ru.practicum.shareit.requests.ItemRequest;
 
 @Data
-public class  ItemDto {
+public class ItemDto {
 
     private int id;
     private String name;
     private String description;
     private Boolean available;
     private Integer owner;
-    private ItemRequest request;
+    private Integer request;
 
-    public ItemDto(String name, String description, Boolean available, Integer owner, ItemRequest request) {
+    public ItemDto(String name, String description, Boolean available, Integer owner, Integer request) {
         this.name = name;
         this.description = description;
         this.available = available;
