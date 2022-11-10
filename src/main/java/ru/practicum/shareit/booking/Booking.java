@@ -28,7 +28,7 @@ public class Booking {
     private Status status;
     @ManyToOne
     @JoinColumn(name = "booker_id")
-    private User user;
+    private User booker;
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;

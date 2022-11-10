@@ -7,7 +7,7 @@ import java.util.Collection;
 
 public interface BookingService {
 
-    BookingDto createBooking(int userId, BookingDtoIn booking);
+    Booking createBooking(int userId, BookingDtoIn booking);
 
     BookingDto changeStatusOnApprovedOrRejected(int bookingId, int userId, String approved);
 

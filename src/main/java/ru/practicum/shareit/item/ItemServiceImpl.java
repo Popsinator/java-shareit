@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import ru.practicum.shareit.item.dto.CommentDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +11,6 @@ import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.LastBooking;
 import ru.practicum.shareit.booking.dto.NextBooking;
 import ru.practicum.shareit.exception.*;
-import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -159,7 +159,7 @@ public class ItemServiceImpl implements ItemService {
             throw new EmptyCommentTextException("Пустой комментарий");
         }
         boolean flag = true;
-        List<Booking> test = bookingRepository.findAll().stream().filter(x -> (x.getItem().getId() == itemId) && (x.getUser().getId() == userId)).collect(Collectors.toList());
+        List<Booking> test = bookingRepository.findAll().stream().filter(x -> (x.getItem().getId() == itemId) && (x.getBooker().getId() == userId)).collect(Collectors.toList());
         for (Booking booking : test) {
             if (booking.getStatus().equals(Status.APPROVED) && booking.getStart().isBefore(LocalDateTime.now())
                     && booking.getEnd().isBefore(LocalDateTime.now())) {

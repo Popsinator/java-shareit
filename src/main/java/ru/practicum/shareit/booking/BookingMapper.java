@@ -21,11 +21,11 @@ public class BookingMapper {
     }
 
     public static LastBooking toLastBooking(Booking booking) {
-        return new LastBooking("last", booking.getId(), booking.getUser().getId());
+        return new LastBooking("last", booking.getId(), booking.getBooker().getId());
     }
 
     public static NextBooking toNextBooking(Booking booking) {
-        return new NextBooking("next", booking.getId(), booking.getUser().getId());
+        return new NextBooking("next", booking.getId(), booking.getBooker().getId());
     }
 
     public static Booking toBookingDtoIn(BookingDtoIn booking, User user, Item item) {

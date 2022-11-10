@@ -32,10 +32,10 @@ public class Item {
     @Column(name = "available")
     private Boolean available;
     @ManyToOne(optional = false)
-    @JoinColumn(name = "owner", nullable = false)
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
     @ManyToOne
-    @JoinColumn(name = "request")
+    @JoinColumn(name = "request_id")
     private ItemRequest request;
     @Transient
     private LastBooking lastBooking;

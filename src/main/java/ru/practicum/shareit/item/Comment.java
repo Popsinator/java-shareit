@@ -22,9 +22,9 @@ public class Comment {
     @Column(name = "text", nullable = false)
     private String text;
     @ManyToOne
-    @JoinColumn(name = "item_id", nullable = false)
+    @JoinColumn(name = "item_id")
     private Item item;
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id")
     private User author;
 }

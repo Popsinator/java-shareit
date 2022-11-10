@@ -6,9 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.exception.*;
-import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -27,7 +25,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingDto createBooking(int userId, BookingDtoIn booking) {
+    public Booking createBooking(int userId, BookingDtoIn booking) {
         LocalDateTime real = LocalDateTime.now();
         if (itemRepository.findAll().stream().noneMatch(x -> x.getId() == booking.getItemId())) {
             throw new NotFoundObjectException(String.format("Вещи с идентификатором %s не существует.", booking.getItemId()));
@@ -42,10 +40,8 @@ public class BookingServiceImpl implements BookingService {
             throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         booking.setStatus(Status.WAITING);
-        User tempUser = userRepository.findUserByIdEquals(userId);
-        Item tempItem = itemRepository.findItemByIdEquals(booking.getItemId());
-        Booking test = BookingMapper.toBookingDtoIn(booking, tempUser, tempItem);
-        return BookingMapper.toBookingDto(bookingRepository.save(test), tempUser, tempItem);
+        Booking test = BookingMapper.toBookingDtoIn(booking, userRepository.findUserByIdEquals(userId), itemRepository.findItemByIdEquals(booking.getItemId()));
+        return bookingRepository.save(test);
     }
 
     @Transactional
@@ -63,7 +59,7 @@ public class BookingServiceImpl implements BookingService {
         } else if (approved.equals("false")) {
             existBooking.setStatus(Status.REJECTED);
         }
-        return BookingMapper.toBookingDto(bookingRepository.save(existBooking), existBooking.getUser(), existBooking.getItem());
+        return BookingMapper.toBookingDto(bookingRepository.save(existBooking), existBooking.getBooker(), existBooking.getItem());
     }
 
     @Override
@@ -77,7 +73,7 @@ public class BookingServiceImpl implements BookingService {
         checkBookingId(bookingId);
         Booking booking = bookingRepository.findBookingByIdEquals(bookingId);
         checkUserAndBookerId(userId, bookingId);
-        return BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem());
+        return BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
     }
 
     @Override
@@ -86,26 +82,26 @@ public class BookingServiceImpl implements BookingService {
         checkUserId(userId);
         State stateAfterCheck = checkStatus(state);
         Collection<BookingDto> bookingDtos = new ArrayList<>();
-        Collection<Booking> temp = bookingRepository.findAll().stream().filter(x -> x.getUser().getId() == userId).collect(Collectors.toList());
+        Collection<Booking> temp = bookingRepository.findAll().stream().filter(x -> x.getBooker().getId() == userId).collect(Collectors.toList());
         if (stateAfterCheck.equals(State.WAITING)) {
             for (Booking booking : temp) {
                 if (booking.getStatus().equals(Status.WAITING)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem()));
+                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
                 }
             }
         } else if (stateAfterCheck.equals(State.REJECTED)) {
             for (Booking booking : temp) {
                 if (booking.getStatus().equals(Status.REJECTED)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem()));
+                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
                 }
             }
         } else if (stateAfterCheck.equals(State.ALL)) {
             for (Booking booking : temp) {
-                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem()));
+                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
             }
         } else if (stateAfterCheck.equals(State.CURRENT)) {
             for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem());
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
                 if (bookingDtoAdd.getStart().isBefore(real)
                         && bookingDtoAdd.getEnd().isAfter(real)) {
                     bookingDtos.add(bookingDtoAdd);
@@ -113,14 +109,14 @@ public class BookingServiceImpl implements BookingService {
             }
         } else if (stateAfterCheck.equals(State.PAST)) {
             for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem());
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
                 if (bookingDtoAdd.getStart().isBefore(real) && bookingDtoAdd.getEnd().isBefore(real)) {
                     bookingDtos.add(bookingDtoAdd);
                 }
             }
         } else if (stateAfterCheck.equals(State.FUTURE)) {
             for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem());
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
                 if (bookingDtoAdd.getStart().isAfter(real)) {
                     bookingDtos.add(bookingDtoAdd);
                 }
@@ -140,22 +136,22 @@ public class BookingServiceImpl implements BookingService {
         if (stateAfterCheck.equals(State.WAITING)) {
             for (Booking booking : bookingsFull) {
                 if (booking.getStatus().equals(Status.WAITING)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem()));
+                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
                 }
             }
         } else if (stateAfterCheck.equals(State.REJECTED)) {
             for (Booking booking : bookingsFull) {
                 if (booking.getStatus().equals(Status.REJECTED)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem()));
+                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
                 }
             }
         } else if (stateAfterCheck.equals(State.ALL)) {
             for (Booking booking : bookingsFull) {
-                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem()));
+                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
             }
         } else if (stateAfterCheck.equals(State.CURRENT)) {
             for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem());
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
                 if (bookingDtoAdd.getStart().isBefore(real)
                         && bookingDtoAdd.getEnd().isAfter(real)) {
                     bookingDtos.add(bookingDtoAdd);
@@ -163,14 +159,14 @@ public class BookingServiceImpl implements BookingService {
             }
         } else if (stateAfterCheck.equals(State.PAST)) {
             for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem());
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
                 if (bookingDtoAdd.getStart().isBefore(real) && bookingDtoAdd.getEnd().isBefore(real)) {
                     bookingDtos.add(bookingDtoAdd);
                 }
             }
         } else if (stateAfterCheck.equals(State.FUTURE)) {
             for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getUser(), booking.getItem());
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
                 if (bookingDtoAdd.getStart().isAfter(real)) {
                     bookingDtos.add(bookingDtoAdd);
                 }
@@ -189,7 +185,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public void checkUserAndBookerId(int userId, int bookingId) {
-        if (bookingRepository.findBookingByIdEquals(bookingId).getUser().getId() != userId
+        if (bookingRepository.findBookingByIdEquals(bookingId).getBooker().getId() != userId
                 && bookingRepository.findBookingByIdEquals(bookingId).getItem().getOwner().getId() != userId) {
             throw new InvalidHeaderUserId(String.format(
                     "Пользователю с идентификатором %s бронирование с идентификатором "
@@ -220,16 +216,5 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new InvalidStateBookingException("Unknown state: " + state);
         }
-    }
-
-    public boolean checkItemId(int itemId) {
-        boolean isExistUser = false;
-        for (Item value : itemRepository.findAll()) {
-            if (value.getId() == itemId) {
-                isExistUser = true;
-                break;
-            }
-        }
-        return isExistUser;
     }
 }
