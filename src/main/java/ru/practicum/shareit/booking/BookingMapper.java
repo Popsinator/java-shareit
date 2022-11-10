@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.dto.LastBooking;
 import ru.practicum.shareit.booking.dto.NextBooking;
 import ru.practicum.shareit.item.Item;
@@ -20,10 +21,21 @@ public class BookingMapper {
     }
 
     public static LastBooking toLastBooking(Booking booking) {
-        return new LastBooking("last", booking.getId(), booking.getBookerId());
+        return new LastBooking("last", booking.getId(), booking.getUser().getId());
     }
 
     public static NextBooking toNextBooking(Booking booking) {
-        return new NextBooking("next", booking.getId(), booking.getBookerId());
+        return new NextBooking("next", booking.getId(), booking.getUser().getId());
+    }
+
+    public static Booking toBookingDtoIn(BookingDtoIn booking, User user, Item item) {
+        return new Booking(
+                booking.getId() == 0 ? 0 : booking.getId(),
+                booking.getStart() == null ? null : booking.getStart(),
+                booking.getEnd() == null ? null : booking.getEnd(),
+                booking.getStatus() == null ? null : booking.getStatus(),
+                user,
+                item
+        );
     }
 }

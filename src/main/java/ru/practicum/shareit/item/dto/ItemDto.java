@@ -1,18 +1,22 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import ru.practicum.shareit.requests.ItemRequest;
+import ru.practicum.shareit.user.User;
 
-@Data
+@Getter
+@Setter
 public class ItemDto {
 
     private int id;
     private String name;
     private String description;
     private Boolean available;
-    private Integer owner;
-    private Integer request;
+    private User owner;
+    private ItemRequest request;
 
-    public ItemDto(String name, String description, Boolean available, Integer owner, Integer request) {
+    public ItemDto(String name, String description, Boolean available, User owner, ItemRequest request) {
         this.name = name;
         this.description = description;
         this.available = available;

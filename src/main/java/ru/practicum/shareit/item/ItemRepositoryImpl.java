@@ -26,10 +26,6 @@ public class ItemRepositoryImpl implements ItemRepositoryLocal {
         this.userRepository = userRepository;
     }
 
-    public Map<Integer, Item> getItemStorage() {
-        return itemStorage;
-    }
-
     public static int getIdentificator() {
         return identificator;
     }
@@ -70,7 +66,7 @@ public class ItemRepositoryImpl implements ItemRepositoryLocal {
     @Override
     public Collection<Item> searchAllItemUser(Integer userId) {
         return itemStorage.values().stream()
-                .filter(x -> Objects.equals(x.getOwner(), userId))
+                .filter(x -> Objects.equals(x.getOwner().getId(), userId))
                 .collect(Collectors.toList());
     }
 
@@ -78,15 +74,15 @@ public class ItemRepositoryImpl implements ItemRepositoryLocal {
     public Collection<Item> searchAllItemsOnDescription(String text) {
         return itemStorage.values().stream()
                 .filter(x -> x.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .filter(y -> y.getAvailable() == true)
+                .filter(Item::getAvailable)
                 .collect(Collectors.toList());
     }
 
     @Override
     public void checkItem(Item item) {
-        if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner() == 0) {
+        if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner().getId() == 0) {
             throw new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец");
-        } else if (!userRepository.getUsersStorage().containsKey(item.getOwner())) {
+        } else if (!userRepository.getUsersStorage().containsKey(item.getOwner().getId())) {
             throw new NotFoundObjectException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }

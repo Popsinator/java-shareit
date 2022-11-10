@@ -1,17 +1,21 @@
 package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.shareit.booking.dto.LastBooking;
 import ru.practicum.shareit.booking.dto.NextBooking;
 import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.requests.ItemRequest;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -27,10 +31,12 @@ public class Item {
     private String description;
     @Column(name = "available")
     private Boolean available;
-    @Column(name = "owner", nullable = false)
-    private Integer owner;
-    @Column(name = "request")
-    private Integer request;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner", nullable = false)
+    private User owner;
+    @ManyToOne
+    @JoinColumn(name = "request")
+    private ItemRequest request;
     @Transient
     private LastBooking lastBooking;
     @Transient
@@ -38,7 +44,7 @@ public class Item {
     @Transient
     private List<CommentDto> comments = new ArrayList<>();
 
-    public Item(String name, String description, Boolean available, Integer owner, Integer request) {
+    public Item(String name, String description, Boolean available, User owner, ItemRequest request) {
         this.name = name;
         this.description = description;
         this.available = available;

@@ -2,24 +2,28 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.IdItemOrUserNotExistException;
 import ru.practicum.shareit.exception.InvalidMaleUserException;
 
-import javax.transaction.Transactional;
+
 import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
 
+    @Transactional
     @Override
     public User createUser(User user) {
         checkUser(user);
         return repository.save(user);
     }
 
+    @Transactional
     @Override
     public User updateUser(User user, int userId) {
         User userUpdate = repository.findUserByIdEquals(userId);

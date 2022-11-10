@@ -1,12 +1,15 @@
 package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -18,8 +21,10 @@ public class Comment {
     private Integer id;
     @Column(name = "text", nullable = false)
     private String text;
-    @Column(name = "item_id", nullable = false)
-    private Integer itemId;
-    @Column(name = "author_id", nullable = false)
-    private Integer authorId;
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 }

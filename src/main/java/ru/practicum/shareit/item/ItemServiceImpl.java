@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -10,7 +11,7 @@ import ru.practicum.shareit.booking.dto.LastBooking;
 import ru.practicum.shareit.booking.dto.NextBooking;
 import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.user.UserServiceImpl;
+import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -18,39 +19,42 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
 
-    private final ItemRepository repository;
-    private final UserServiceImpl userService;
+    private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentsRepository commentsRepository;
 
+    @Transactional
     @Override
     public Item createItem(Item item, int userId) {
-        item.setOwner(userId);
+        item.setOwner(userRepository.findUserByIdEquals(userId));
         checkItem(item);
-        return repository.save(item);
+        return itemRepository.save(item);
     }
 
+    @Transactional
     @Override
     public Item updateItem(Item item, int itemId, Integer userId) {
         if (userId == null) {
             throw new EmptyHeaderUserId("Отсутствует заголовок 'X-Sharer-User-Id'");
-        } else if (!Objects.equals(repository.findItemByIdEquals(itemId).getOwner(), userId)) {
+        } else if (!Objects.equals(itemRepository.findItemByIdEquals(itemId).getOwner().getId(), userId)) {
             throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         Item itemInStorage = getItem(itemId, userId);
         Item itemUpdate = ItemMapper.toDtoItem(ItemMapper.toItemDto(item), itemInStorage);
         itemUpdate.setId(itemId);
-        return repository.save(itemUpdate);
+        return itemRepository.save(itemUpdate);
     }
 
     @Override
     public Item getItem(int itemId, int userId) {
         LocalDateTime real = LocalDateTime.now();
-        List<Booking> bookings = bookingRepository.findAllByItemIdEquals(itemId);
-        List<Comment> comments = commentsRepository.findAllByItemIdEquals(itemId);
-        Item send = repository.findItemByIdEquals(itemId);
+        List<Booking> bookings = bookingRepository.findAll().stream().filter(x -> x.getItem().getId() == itemId).collect(Collectors.toList());
+        List<Comment> comments = commentsRepository.findAll().stream().filter(x -> x.getItem().getId() == itemId).collect(Collectors.toList());
+        Item send = itemRepository.findItemByIdEquals(itemId);
         if (!checkItemId(itemId)) {
             throw new IdItemOrUserNotExistException(String.format(
                     "Вещь с данным id %s не зарегистрирована.", itemId));
@@ -73,11 +77,11 @@ public class ItemServiceImpl implements ItemService {
             if (comments.size() != 0) {
                 for (Comment comment : comments) {
                     if (comment.getText() != null) {
-                        send.getComments().add(ItemMapper.toDtoComment(comment, userService.getUser(comment.getAuthorId()).getName(), ""));
+                        send.getComments().add(ItemMapper.toDtoComment(comment, comment.getAuthor().getName(), ""));
                     }
                 }
             }
-            if (userId != send.getOwner()) {
+            if (userId != send.getOwner().getId()) {
                 return send;
             }
             send.setLastBooking(lastBooking);
@@ -87,7 +91,7 @@ public class ItemServiceImpl implements ItemService {
         if (comments.size() != 0) {
             for (Comment comment : comments) {
                 if (comment.getText() != null) {
-                    send.getComments().add(ItemMapper.toDtoComment(comment, userService.getUser(comment.getAuthorId()).getName(), ""));
+                    send.getComments().add(ItemMapper.toDtoComment(comment, comment.getAuthor().getName(), ""));
                 }
             }
         }
@@ -96,15 +100,15 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<Item> findAllItem() {
-        return repository.findAll();
+        return itemRepository.findAll();
     }
 
     @Override
     public Collection<Item> getAllItems(Integer userId) {
         LocalDateTime real = LocalDateTime.now();
-        List<Item> items = repository.findAllByOwnerEquals(userId);
+        List<Item> items = itemRepository.findAll().stream().filter(x -> x.getOwner().getId() == userId).collect(Collectors.toList());
         for (Item item : items) {
-            List<Booking> bookings = bookingRepository.findAllByItemIdEquals(item.getId());
+            List<Booking> bookings = bookingRepository.findAll().stream().filter(x -> x.getItem().getId() == item.getId()).collect(Collectors.toList());
             if (!bookings.isEmpty()) {
                 LastBooking lastBooking = null;
                 NextBooking nextBooking = null;
@@ -121,45 +125,41 @@ public class ItemServiceImpl implements ItemService {
                         break;
                     }
                 }
-                if (userId.equals(item.getOwner())) {
+                if (userId.equals(item.getOwner().getId())) {
                     item.setLastBooking(lastBooking);
                     item.setNextBooking(nextBooking);
                 }
             }
         }
         return items.stream()
-                .sorted(new Comparator<Item>() {
-                    @Override
-                    public int compare(Item o1, Item o2) {
-                        return Integer.compare(o1.getId(), o2.getId());
-                    }
-                }).collect(Collectors.toList());
+                .sorted(Comparator.comparingInt(Item::getId)).collect(Collectors.toList());
     }
 
     @Override
     public List<Item> findItemsOnDescription(String text) {
         if (text.isEmpty()) {
-            List<Item> empty = new ArrayList<>();
-            return empty;
+            return new ArrayList<>();
         }
-        return repository.findAllByDescriptionContainingIgnoreCase(text)
+        return itemRepository.findAllByDescriptionContainingIgnoreCase(text)
                 .stream()
-                .filter(x -> x.getAvailable() == true)
+                .filter(Item::getAvailable)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public void deleteItem(int itemId) {
-        repository.deleteItemById(itemId);
+        itemRepository.deleteItemById(itemId);
     }
 
+    @Transactional
     @Override
     public CommentDto createComment(Comment comment, int userId, int itemId) {
         if (comment.getText().isEmpty()) {
             throw new EmptyCommentTextException("Пустой комментарий");
         }
         boolean flag = true;
-        List<Booking> test = bookingRepository.findAllByItemIdEqualsAndBookerIdEquals(itemId, userId);
+        List<Booking> test = bookingRepository.findAll().stream().filter(x -> (x.getItem().getId() == itemId) && (x.getUser().getId() == userId)).collect(Collectors.toList());
         for (Booking booking : test) {
             if (booking.getStatus().equals(Status.APPROVED) && booking.getStart().isBefore(LocalDateTime.now())
                     && booking.getEnd().isBefore(LocalDateTime.now())) {
@@ -169,15 +169,15 @@ public class ItemServiceImpl implements ItemService {
         if (flag) {
             throw new NotBookingForUserException(String.format("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
         }
-        comment.setAuthorId(userId);
-        comment.setItemId(itemId);
-        return ItemMapper.toDtoComment(commentsRepository.save(comment), userService.getUser(userId).getName(), "");
+        comment.setAuthor(userRepository.findUserByIdEquals(userId));
+        comment.setItem(itemRepository.findItemByIdEquals(itemId));
+        return ItemMapper.toDtoComment(commentsRepository.save(comment), comment.getAuthor().getName(), "");
     }
 
     public void checkItem(Item item) {
-        if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner() == 0) {
+        if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner().getId() == 0) {
             throw new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец");
-        } else if (userService.findAllUsers().stream().noneMatch(x -> x.getId() == item.getOwner())) {
+        } else if (userRepository.findAll().stream().noneMatch(x -> x.getId() == item.getOwner().getId())) {
             throw new NotFoundObjectException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }
@@ -185,9 +185,10 @@ public class ItemServiceImpl implements ItemService {
 
     public boolean checkItemId(int itemId) {
         boolean isExistUser = false;
-        for (Item value : repository.findAll()) {
+        for (Item value : itemRepository.findAll()) {
             if (value.getId() == itemId) {
                 isExistUser = true;
+                break;
             }
         }
         return isExistUser;
