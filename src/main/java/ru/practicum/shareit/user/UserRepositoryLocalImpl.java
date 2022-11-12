@@ -11,7 +11,7 @@ import java.util.Map;
 
 @Data
 @Component
-public class UserRepositoryImpl implements UserRepository {
+public class UserRepositoryLocalImpl implements UserRepositoryLocal {
 
     private final Map<Integer, User> usersStorage = new HashMap<>();
     private static int id = 0;
@@ -30,7 +30,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     public static void setId(int id) {
-        UserRepositoryImpl.id = id + 1;
+        UserRepositoryLocalImpl.id = id + 1;
     }
 
     @Override

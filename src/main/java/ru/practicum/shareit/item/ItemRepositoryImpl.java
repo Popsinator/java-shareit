@@ -3,8 +3,8 @@ package ru.practicum.shareit.item;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.EmptyFieldItemException;
-import ru.practicum.shareit.exception.NotFoundOwnerItemException;
-import ru.practicum.shareit.user.UserRepositoryImpl;
+import ru.practicum.shareit.exception.NotFoundObjectException;
+import ru.practicum.shareit.user.UserRepositoryLocalImpl;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,22 +14,16 @@ import java.util.stream.Collectors;
 
 @Data
 @Component
-public class ItemRepositoryImpl implements ItemRepository {
+public class ItemRepositoryImpl implements ItemRepositoryLocal {
 
     private final Map<Integer, Item> itemStorage = new HashMap<>();
 
     private static int identificator = 0;
 
-    private ItemMapper itemMapper = new ItemMapper(itemStorage);
+    private UserRepositoryLocalImpl userRepository;
 
-    private UserRepositoryImpl userRepository;
-
-    public ItemRepositoryImpl(UserRepositoryImpl userRepository) {
+    public ItemRepositoryImpl(UserRepositoryLocalImpl userRepository) {
         this.userRepository = userRepository;
-    }
-
-    public Map<Integer, Item> getItemStorage() {
-        return itemStorage;
     }
 
     public static int getIdentificator() {
@@ -51,7 +45,8 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Item updateItem(Item item, int itemId) {
-        Item itemUpdate = itemMapper.toDtoItem(itemMapper.toItemDto(item), itemId);
+        Item itemInStorage = getItem(itemId);
+        Item itemUpdate = ItemMapper.toDtoItem(ItemMapper.toItemDto(item), itemInStorage);
         itemUpdate.setId(itemId);
         checkItem(itemUpdate);
         itemStorage.put(itemId, itemUpdate);
@@ -71,7 +66,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Collection<Item> searchAllItemUser(Integer userId) {
         return itemStorage.values().stream()
-                .filter(x -> Objects.equals(x.getOwner(), userId))
+                .filter(x -> Objects.equals(x.getOwner().getId(), userId))
                 .collect(Collectors.toList());
     }
 
@@ -79,18 +74,16 @@ public class ItemRepositoryImpl implements ItemRepository {
     public Collection<Item> searchAllItemsOnDescription(String text) {
         return itemStorage.values().stream()
                 .filter(x -> x.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .filter(y -> y.getAvailable() == true)
+                .filter(Item::getAvailable)
                 .collect(Collectors.toList());
     }
 
-
     @Override
     public void checkItem(Item item) {
-        if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner() == 0) {
+        if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner().getId() == 0) {
             throw new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец");
-        } else
-            if (!userRepository.getUsersStorage().containsKey(item.getOwner())) {
-            throw new NotFoundOwnerItemException(String.format(
+        } else if (!userRepository.getUsersStorage().containsKey(item.getOwner().getId())) {
+            throw new NotFoundObjectException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }
     }

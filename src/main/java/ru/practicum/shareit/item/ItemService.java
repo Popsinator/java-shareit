@@ -1,5 +1,7 @@
 package ru.practicum.shareit.item;
 
+import ru.practicum.shareit.item.dto.CommentDto;
+
 import java.util.Collection;
 
 public interface ItemService {
@@ -8,11 +10,15 @@ public interface ItemService {
 
     Item updateItem(Item item, int itemId, Integer userId);
 
-    Item getItem(int itemId);
+    Item getItem(int itemId, int userId);
 
-    Collection<Item> getItems(Integer userId);
+    Collection<Item> getAllItems(Integer userId);
 
     Collection<Item> findItemsOnDescription(String text);
 
+    Collection<Item> findAllItem();
+
     void deleteItem(int itemId);
+
+    CommentDto createComment(Comment comment, int userId, int itemId);
 }

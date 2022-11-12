@@ -1,16 +1,11 @@
 package ru.practicum.shareit.item;
 
-import java.util.Map;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.CommentDto;
 
 public class ItemMapper {
 
-    Map<Integer, Item> itemRepository;
-
-    public ItemMapper(Map<Integer, Item> itemRepository) {
-        this.itemRepository = itemRepository;
-    }
-
-    public ItemDto toItemDto(Item item) {
+    public static ItemDto toItemDto(Item item) {
         return new ItemDto(
                 item.getName() != null ? item.getName() : null,
                 item.getDescription() != null ? item.getDescription() : null,
@@ -20,18 +15,22 @@ public class ItemMapper {
         );
     }
 
-    public Item toDtoItem(ItemDto itemDto, int itemId) {
+    public static Item toDtoItem(ItemDto itemDto, Item item) {
         return new Item(
-                itemDto.getName() == null ? itemRepository.get(itemId).getName()
-                        : itemDto.getName(),
-                itemDto.getDescription() == null ? itemRepository.get(itemId).getDescription()
-                        : itemDto.getDescription(),
-                itemDto.getAvailable() == null ? itemRepository.get(itemId).getAvailable()
-                        : itemDto.getAvailable(),
-                itemDto.getOwner() == null ? itemRepository.get(itemId).getOwner()
-                        : itemDto.getOwner(),
-                itemDto.getRequest() == null ? itemRepository.get(itemId).getRequest()
-                        : itemDto.getRequest()
-            );
+                itemDto.getName() == null ? item.getName() : itemDto.getName(),
+                itemDto.getDescription() == null ? item.getDescription() : itemDto.getDescription(),
+                itemDto.getAvailable() == null ? item.getAvailable() : itemDto.getAvailable(),
+                itemDto.getOwner() == null ? item.getOwner() : itemDto.getOwner(),
+                itemDto.getRequest() == null ? item.getRequest() : itemDto.getRequest()
+        );
+    }
+
+    public static CommentDto toDtoComment(Comment comment, String authorName, String created) {
+        return new CommentDto(
+                comment.getId(),
+                comment.getText(),
+                authorName,
+                created
+        );
     }
 }

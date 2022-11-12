@@ -1,20 +1,33 @@
 package ru.practicum.shareit.user;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+import javax.persistence.*;
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@Entity
+@Table(name = "users", schema = "public")
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "name", nullable = false)
     private String name;
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     public User(int id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;
+    }
+
+    public User() {
     }
 
     @Override
