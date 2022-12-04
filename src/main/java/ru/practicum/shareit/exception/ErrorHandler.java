@@ -59,6 +59,12 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleIdItemRequestNotExistException(final IdItemRequestNotExistException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleItemIsAvailableFalseException(final ItemIdStatusUnavailableException exception) {
         return new ErrorResponse(exception.getMessage());
@@ -91,6 +97,18 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleEmptyCommentTextException(final EmptyCommentTextException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleEmptyDescriptionTextRequestException(final EmptyDescriptionReuestException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleInvalidParamsPaginationInRequestException(final InvalidParamsPaginationException exception) {
         return new ErrorResponse(exception.getMessage());
     }
 

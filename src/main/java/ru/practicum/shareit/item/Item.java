@@ -7,7 +7,6 @@ import lombok.Setter;
 import ru.practicum.shareit.booking.dto.LastBooking;
 import ru.practicum.shareit.booking.dto.NextBooking;
 import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.requests.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -34,9 +33,8 @@ public class Item {
     @ManyToOne(optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
-    @ManyToOne
-    @JoinColumn(name = "request_id")
-    private ItemRequest request;
+    @Column(name = "request_id")
+    private int requestId;
     @Transient
     private LastBooking lastBooking;
     @Transient
@@ -44,12 +42,12 @@ public class Item {
     @Transient
     private List<CommentDto> comments = new ArrayList<>();
 
-    public Item(String name, String description, Boolean available, User owner, ItemRequest request) {
+    public Item(String name, String description, Boolean available, User owner, int requestId) {
         this.name = name;
         this.description = description;
         this.available = available;
         this.owner = owner;
-        this.request = request;
+        this.requestId = requestId;
     }
 
     public Item(int id, String name, String description, Boolean available, LastBooking lastBooking, NextBooking nextBooking) {

@@ -70,6 +70,7 @@ public class UserServiceImpl implements UserService {
         for (User value : repository.findAll()) {
             if (value.getId() == userId) {
                 isExistUser = true;
+                break;
             }
         }
         return isExistUser;

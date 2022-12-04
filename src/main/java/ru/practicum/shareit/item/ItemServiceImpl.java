@@ -27,6 +27,9 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentsRepository commentsRepository;
 
+    private LastBooking lastBooking;
+    private NextBooking nextBooking;
+
     @Transactional
     @Override
     public Item createItem(Item item, int userId) {
@@ -51,6 +54,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item getItem(int itemId, int userId) {
+        lastBooking = null;
+        nextBooking = null;
         LocalDateTime real = LocalDateTime.now();
         List<Booking> bookings = bookingRepository.findAll().stream().filter(x -> x.getItem().getId() == itemId).collect(Collectors.toList());
         List<Comment> comments = commentsRepository.findAll().stream().filter(x -> x.getItem().getId() == itemId).collect(Collectors.toList());
@@ -59,21 +64,7 @@ public class ItemServiceImpl implements ItemService {
             throw new IdItemOrUserNotExistException(String.format(
                     "Вещь с данным id %s не зарегистрирована.", itemId));
         } else if (!bookings.isEmpty()) {
-            LastBooking lastBooking = null;
-            NextBooking nextBooking = null;
-            for (Booking booking : bookings) {
-                if (booking.getEnd().isBefore(real)) {
-                    lastBooking = BookingMapper.toLastBooking(booking);
-                    continue;
-                }
-                if (booking.getStart().isAfter(real)) {
-                    nextBooking = BookingMapper.toNextBooking(booking);
-                    continue;
-                }
-                if (lastBooking != null && nextBooking != null) {
-                    break;
-                }
-            }
+            setLastAndNextBooking(real, bookings);
             if (comments.size() != 0) {
                 for (Comment comment : comments) {
                     if (comment.getText() != null) {
@@ -105,26 +96,14 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<Item> getAllItems(Integer userId) {
+        lastBooking = null;
+        nextBooking = null;
         LocalDateTime real = LocalDateTime.now();
         List<Item> items = itemRepository.findAll().stream().filter(x -> x.getOwner().getId() == userId).collect(Collectors.toList());
         for (Item item : items) {
             List<Booking> bookings = bookingRepository.findAll().stream().filter(x -> x.getItem().getId() == item.getId()).collect(Collectors.toList());
             if (!bookings.isEmpty()) {
-                LastBooking lastBooking = null;
-                NextBooking nextBooking = null;
-                for (Booking booking : bookings) {
-                    if (booking.getEnd().isBefore(real)) {
-                        lastBooking = BookingMapper.toLastBooking(booking);
-                        continue;
-                    }
-                    if (booking.getStart().isAfter(real)) {
-                        nextBooking = BookingMapper.toNextBooking(booking);
-                        continue;
-                    }
-                    if (lastBooking != null && nextBooking != null) {
-                        break;
-                    }
-                }
+                setLastAndNextBooking(real, bookings);
                 if (userId.equals(item.getOwner().getId())) {
                     item.setLastBooking(lastBooking);
                     item.setNextBooking(nextBooking);
@@ -192,5 +171,21 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         return isExistUser;
+    }
+
+    public void setLastAndNextBooking(LocalDateTime real, List<Booking> bookings) {
+        for (Booking booking : bookings) {
+            if (booking.getEnd().isBefore(real)) {
+                lastBooking = BookingMapper.toLastBooking(booking);
+                continue;
+            }
+            if (booking.getStart().isAfter(real)) {
+                nextBooking = BookingMapper.toNextBooking(booking);
+                continue;
+            }
+            if (lastBooking != null && nextBooking != null) {
+                break;
+            }
+        }
     }
 }

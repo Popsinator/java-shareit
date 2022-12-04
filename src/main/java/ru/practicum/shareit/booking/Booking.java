@@ -32,6 +32,4 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;
-
-
 }

@@ -2,7 +2,7 @@ package ru.practicum.shareit.user;
 
 import java.util.Collection;
 
-interface UserService {
+public interface UserService {
     User createUser(User user);
 
     User updateUser(User user, int userId);

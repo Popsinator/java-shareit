@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -77,101 +79,47 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingDto> getAllBookings(int userId, String state) {
+    public Collection<BookingDto> getAllBookings(int userId, String state, String from, String size) {
         LocalDateTime real = LocalDateTime.now();
         checkUserId(userId);
         State stateAfterCheck = checkStatus(state);
         Collection<BookingDto> bookingDtos = new ArrayList<>();
-        Collection<Booking> temp = bookingRepository.findAll().stream().filter(x -> x.getBooker().getId() == userId).collect(Collectors.toList());
-        if (stateAfterCheck.equals(State.WAITING)) {
-            for (Booking booking : temp) {
-                if (booking.getStatus().equals(Status.WAITING)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-                }
-            }
-        } else if (stateAfterCheck.equals(State.REJECTED)) {
-            for (Booking booking : temp) {
-                if (booking.getStatus().equals(Status.REJECTED)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-                }
-            }
-        } else if (stateAfterCheck.equals(State.ALL)) {
-            for (Booking booking : temp) {
-                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-            }
-        } else if (stateAfterCheck.equals(State.CURRENT)) {
-            for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isBefore(real)
-                        && bookingDtoAdd.getEnd().isAfter(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
-        } else if (stateAfterCheck.equals(State.PAST)) {
-            for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isBefore(real) && bookingDtoAdd.getEnd().isBefore(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
-        } else if (stateAfterCheck.equals(State.FUTURE)) {
-            for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isAfter(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
+        Collection<Booking> temp;
+        if (from == null || size == null) {
+            temp = bookingRepository.findAll().stream().filter(x -> x.getBooker().getId() == userId).collect(Collectors.toList());
+        } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
+            throw new InvalidParamsPaginationException("Некорректные параметры пагинации.");
+        } else {
+            int start = Integer.parseInt(from) / Integer.parseInt(size);
+            temp = bookingRepository.findAllByBooker_Id(userId, PageRequest.of(start, Integer.parseInt(size), Sort.by(Sort.Direction.DESC, "start")))
+                    .stream()
+                    .collect(Collectors.toList());
         }
+        fillBookingDto(real, stateAfterCheck, bookingDtos, temp);
         return bookingDtos.stream()
                 .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart())).collect(Collectors.toList());
     }
 
     @Override
-    public Collection<BookingDto> getAllBookingsOwner(int userId, String state) {
+    public Collection<BookingDto> getAllBookingsOwner(int userId, String state, String from, String size) {
         LocalDateTime real = LocalDateTime.now();
         checkUserId(userId);
         State stateAfterCheck = checkStatus(state);
         Collection<BookingDto> bookingDtos = new ArrayList<>();
-        Collection<Booking> bookingsFull = bookingRepository.findAll();
-        if (stateAfterCheck.equals(State.WAITING)) {
-            for (Booking booking : bookingsFull) {
-                if (booking.getStatus().equals(Status.WAITING)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-                }
-            }
-        } else if (stateAfterCheck.equals(State.REJECTED)) {
-            for (Booking booking : bookingsFull) {
-                if (booking.getStatus().equals(Status.REJECTED)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-                }
-            }
-        } else if (stateAfterCheck.equals(State.ALL)) {
-            for (Booking booking : bookingsFull) {
-                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-            }
-        } else if (stateAfterCheck.equals(State.CURRENT)) {
-            for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isBefore(real)
-                        && bookingDtoAdd.getEnd().isAfter(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
-        } else if (stateAfterCheck.equals(State.PAST)) {
-            for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isBefore(real) && bookingDtoAdd.getEnd().isBefore(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
-        } else if (stateAfterCheck.equals(State.FUTURE)) {
-            for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isAfter(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
+        Collection<Booking> bookingsFull;
+        if (from == null || size == null) {
+            bookingsFull = bookingRepository.findAll();
+        } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
+            throw new InvalidParamsPaginationException("Некорректные параметры пагинации.");
+        } else {
+            int start = Integer.parseInt(from) / Integer.parseInt(size);
+            bookingsFull = bookingRepository.findAllByItemOwner_Id(userId, PageRequest.of(start, Integer.parseInt(size), Sort.by(Sort.Direction.DESC, "start")))
+                    .stream()
+                    .collect(Collectors.toList());
+            fillBookingDto(real, stateAfterCheck, bookingDtos, bookingsFull);
+            return bookingDtos;
         }
+        fillBookingDto(real, stateAfterCheck, bookingDtos, bookingsFull);
         return bookingDtos.stream()
                 .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart())).filter(x -> x.getItem().getOwner().getId() == userId)
                 .collect(Collectors.toList());
@@ -215,6 +163,48 @@ public class BookingServiceImpl implements BookingService {
             return State.PAST;
         } else {
             throw new InvalidStateBookingException("Unknown state: " + state);
+        }
+    }
+
+    public void fillBookingDto(LocalDateTime real, State stateAfterCheck, Collection<BookingDto> bookingDtos, Collection<Booking> temp) {
+        if (stateAfterCheck.equals(State.WAITING)) {
+            for (Booking booking : temp) {
+                if (booking.getStatus().equals(Status.WAITING)) {
+                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
+                }
+            }
+        } else if (stateAfterCheck.equals(State.REJECTED)) {
+            for (Booking booking : temp) {
+                if (booking.getStatus().equals(Status.REJECTED)) {
+                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
+                }
+            }
+        } else if (stateAfterCheck.equals(State.ALL)) {
+            for (Booking booking : temp) {
+                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
+            }
+        } else if (stateAfterCheck.equals(State.CURRENT)) {
+            for (Booking booking : temp) {
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
+                if (bookingDtoAdd.getStart().isBefore(real)
+                        && bookingDtoAdd.getEnd().isAfter(real)) {
+                    bookingDtos.add(bookingDtoAdd);
+                }
+            }
+        } else if (stateAfterCheck.equals(State.PAST)) {
+            for (Booking booking : temp) {
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
+                if (bookingDtoAdd.getStart().isBefore(real) && bookingDtoAdd.getEnd().isBefore(real)) {
+                    bookingDtos.add(bookingDtoAdd);
+                }
+            }
+        } else if (stateAfterCheck.equals(State.FUTURE)) {
+            for (Booking booking : temp) {
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
+                if (bookingDtoAdd.getStart().isAfter(real)) {
+                    bookingDtos.add(bookingDtoAdd);
+                }
+            }
         }
     }
 }
