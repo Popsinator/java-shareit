@@ -11,12 +11,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ErrorHandler {
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleUserEmailAlreadyExistException(final UserAlreadyExistException exception) {
-        return new ErrorResponse(exception.getMessage());
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleUserCreateNoEmailException(final InvalidMaleUserException exception) {
         return new ErrorResponse(exception.getMessage());
@@ -43,12 +37,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleItemHeaderInvalidUserException(final InvalidHeaderUserId exception) {
-        return new ErrorResponse(exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleItemHeaderInvalidUserException(final InvalidHeaderBookingStatus exception) {
         return new ErrorResponse(exception.getMessage());
     }
 
