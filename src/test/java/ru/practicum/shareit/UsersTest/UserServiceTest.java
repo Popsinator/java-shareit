@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 @RequiredArgsConstructor
 @ExtendWith(MockitoExtension.class)
@@ -122,17 +123,17 @@ public class UserServiceTest {
 
     @Test
     void getUserTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(userRepository.findUserByIdEquals(user.getId()))
                 .thenReturn(user);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(user, userService.getUser(user.getId()));
     }
 
     @Test
     void getUserWithErrorTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(false);
 
         final IdItemOrUserNotExistException exception = Assertions.assertThrows(
                 IdItemOrUserNotExistException.class,
@@ -166,19 +167,5 @@ public class UserServiceTest {
                 () -> userService.checkUser(userErrorEmail));
 
         Assertions.assertEquals("Введенный email отсутствует или некорректен", exception.getMessage());
-    }
-
-    @Test
-    void checkUserIdTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
-        Assertions.assertTrue(userService.checkUserId(user.getId()));
-    }
-
-    @Test
-    void checkUserIdFalseTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
-        Assertions.assertFalse(userService.checkUserId(userErrorId.getId()));
     }
 }

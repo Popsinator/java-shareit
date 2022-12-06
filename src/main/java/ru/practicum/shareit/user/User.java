@@ -7,8 +7,11 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Getter
+
 @Setter
+
 @Entity
+
 @Table(name = "users", schema = "public")
 public class User {
 
@@ -18,7 +21,8 @@ public class User {
 
     @Column(name = "name", nullable = false)
     private String name;
-    @Column(name = "email", nullable = false, unique = true)
+
+    @Column(name = "email", nullable = false, unique = true, length = 64)
     private String email;
 
     public User(int id, String name, String email) {

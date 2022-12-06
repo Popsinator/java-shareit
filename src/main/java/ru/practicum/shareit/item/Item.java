@@ -14,31 +14,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+
 @Setter
+
 @AllArgsConstructor
+
 @NoArgsConstructor
+
 @Entity
+
 @Table(name = "items", schema = "public")
 public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
     @Column(name = "name", nullable = false)
     private String name;
-    @Column(name = "description", nullable = false)
+
+    @Column(name = "description", nullable = false, length = 512)
     private String description;
+
     @Column(name = "available")
     private Boolean available;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
     @Column(name = "request_id")
     private int requestId;
+
     @Transient
     private LastBooking lastBooking;
+
     @Transient
     private NextBooking nextBooking;
+
     @Transient
     private List<CommentDto> comments = new ArrayList<>();
 

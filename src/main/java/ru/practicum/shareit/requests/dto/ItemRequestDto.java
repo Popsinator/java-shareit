@@ -10,12 +10,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
+
 @Setter
+
 @AllArgsConstructor
+
 @NoArgsConstructor
 public class ItemRequestDto {
 
     private String description;
+
     private LocalDateTime created;
+
     private List<Item> items;
 }

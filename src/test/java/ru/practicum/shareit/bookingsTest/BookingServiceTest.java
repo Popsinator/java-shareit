@@ -68,10 +68,6 @@ public class BookingServiceTest {
 
     private final BookingDtoIn bookingDtoInBeforeDateReal = new BookingDtoIn(0, LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(1), 1, Status.APPROVED);
 
-    private final List<User> listUsers = List.of(user, userNotOwner);
-
-    private final List<User> listUsersEmpty = List.of();
-
     private final List<Item> listItems = List.of(item);
     private final List<Item> listItemsEmpty = List.of();
 
@@ -95,12 +91,12 @@ public class BookingServiceTest {
                 .thenReturn(booking);
         Mockito.when(itemRepository.findItemByIdEquals(item.getId()))
                 .thenReturn(item);
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(userRepository.findUserByIdEquals(anyInt()))
                 .thenReturn(user);
         Mockito.when(itemRepository.findAll())
                 .thenReturn(listItems);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(booking.getId(), bookingService.createBooking(userNotOwner.getId(), bookingDtoIn).getId());
     }
 
@@ -136,8 +132,8 @@ public class BookingServiceTest {
                 .thenReturn(listItems);
         Mockito.when(itemRepository.findItemByIdEquals(anyInt()))
                 .thenReturn(item);
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsersEmpty);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(false);
 
         final NotFoundObjectException exception = Assertions.assertThrows(
                 NotFoundObjectException.class,
@@ -152,8 +148,8 @@ public class BookingServiceTest {
                 .thenReturn(listItems);
         Mockito.when(itemRepository.findItemByIdEquals(anyInt()))
                 .thenReturn(item);
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         final DateTimeBookingException exception = Assertions.assertThrows(
                 DateTimeBookingException.class,
@@ -168,8 +164,8 @@ public class BookingServiceTest {
                 .thenReturn(listItems);
         Mockito.when(itemRepository.findItemByIdEquals(anyInt()))
                 .thenReturn(item);
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         final InvalidHeaderUserId exception = Assertions.assertThrows(
                 InvalidHeaderUserId.class,
@@ -239,20 +235,20 @@ public class BookingServiceTest {
     void getBookingCompleteTest() {
         Mockito.when(bookingRepository.findBookingByIdEquals(anyInt()))
                 .thenReturn(booking);
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(bookingRepository.findAll())
                 .thenReturn(listBookings);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         Assertions.assertEquals(bookingDto.getId(), bookingService.getBookingDto(booking.getId(), user.getId()).getId());
     }
 
     @Test
     void getAllBookingCompleteTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(bookingRepository.findAllByBooker_Id(anyInt(), any()))
                 .thenReturn(pageBooking);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         Assertions.assertEquals(listBookings.size(), bookingService.getAllBookings(user.getId(), "ALL", "1", "1").size());
         Assertions.assertEquals(listBookings.get(0).getId(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", "1", "1")).get(0).getId());
@@ -262,21 +258,21 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingWithoutPaginationCompleteTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByBooker_Id(anyInt()))
                 .thenReturn(listBookings);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
-        Assertions.assertEquals(listBookings.size(), bookingService.getAllBookings(user.getId(), "ALL", null, null).size());
-        Assertions.assertEquals(listBookings.get(0).getId(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", null, null)).get(0).getId());
-        Assertions.assertEquals(listBookings.get(0).getStatus(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", null, null)).get(0).getStatus());
-        Assertions.assertEquals(listBookings.get(0).getBooker(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", null, null)).get(0).getBooker());
+        Assertions.assertEquals(listBookings.size(), bookingService.getAllBookings(user.getId(), "ALL", "", "").size());
+        Assertions.assertEquals(listBookings.get(0).getId(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", "", "")).get(0).getId());
+        Assertions.assertEquals(listBookings.get(0).getStatus(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", "", "")).get(0).getStatus());
+        Assertions.assertEquals(listBookings.get(0).getBooker(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", "", "")).get(0).getBooker());
     }
 
     @Test
     void getAllBookingWithInvalidParamPaginationTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         final InvalidParamsPaginationException exception = Assertions.assertThrows(
                 InvalidParamsPaginationException.class,
@@ -287,10 +283,10 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingForOwnerCompleteTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(bookingRepository.findAllByItemOwner_Id(anyInt(), any()))
                 .thenReturn(pageBooking);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         Assertions.assertEquals(listBookings.size(), bookingService.getAllBookingsOwner(user.getId(), "ALL", "1", "1").size());
         Assertions.assertEquals(listBookings.get(0).getId(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", "1", "1")).get(0).getId());
@@ -300,10 +296,10 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingForOwnerWithoutPaginationCompleteTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(bookingRepository.findAll())
                 .thenReturn(listBookings);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         Assertions.assertEquals(listBookings.size(), bookingService.getAllBookingsOwner(user.getId(), "ALL", null, null).size());
         Assertions.assertEquals(listBookings.get(0).getId(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", null, null)).get(0).getId());
@@ -313,8 +309,8 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingForOwnerWithInvalidParamPaginationTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         final InvalidParamsPaginationException exception = Assertions.assertThrows(
                 InvalidParamsPaginationException.class,
@@ -325,8 +321,8 @@ public class BookingServiceTest {
 
     @Test
     void checkUserIdExceptionTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsersEmpty);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(false);
 
         final NotFoundObjectException exception = Assertions.assertThrows(
                 NotFoundObjectException.class,

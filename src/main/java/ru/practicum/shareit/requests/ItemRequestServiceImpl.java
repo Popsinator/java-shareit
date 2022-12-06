@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+
 @RequiredArgsConstructor
+
 @Transactional(readOnly = true)
 public class ItemRequestServiceImpl implements ItemRequestService {
 
@@ -40,7 +42,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequest> getRequest(int userId) {
+    public List<ItemRequest> getRequests(int userId) {
         checkUserId(userId);
         List<ItemRequest> requestsList = requestReporistory.findByRequester_Id(userId);
         setItemListInRequestsList(requestsList);
@@ -72,7 +74,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     public void checkUserId(int userId) {
-        if (userRepository.findAll().stream().noneMatch(x -> x.getId() == userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new IdItemOrUserNotExistException(String.format(
                     "Пользователь с данным id %s не зарегистрирован.", userId));
         }

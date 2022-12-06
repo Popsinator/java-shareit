@@ -146,8 +146,8 @@ public class ItemServiceTest {
                 .thenReturn(item);
         Mockito.when(userRepository.findUserByIdEquals(user.getId()))
                 .thenReturn(user);
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(item.getId(), itemService.createItem(item, user.getId()).getId());
     }
 
@@ -378,8 +378,8 @@ public class ItemServiceTest {
 
     @Test
     void checkItemNotExistOwnerTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(false);
 
         final NotFoundObjectException exception = Assertions.assertThrows(
                 NotFoundObjectException.class,

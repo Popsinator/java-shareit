@@ -10,7 +10,9 @@ import ru.practicum.shareit.exception.InvalidMaleUserException;
 import java.util.Collection;
 
 @Service
+
 @RequiredArgsConstructor
+
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
@@ -40,7 +42,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(int userId) {
-        if (!checkUserId(userId)) {
+        if (!repository.existsById(userId)) {
             throw new IdItemOrUserNotExistException(String.format(
                     "Пользователь с данным id %s не зарегистрирован.", userId));
         }
@@ -63,16 +65,5 @@ public class UserServiceImpl implements UserService {
         if (user.getEmail() == null || user.getEmail().isBlank() || !(user.getEmail().contains("@"))) {
             throw new InvalidMaleUserException("Введенный email отсутствует или некорректен");
         }
-    }
-
-    public boolean checkUserId(int userId) {
-        boolean isExistUser = false;
-        for (User value : repository.findAll()) {
-            if (value.getId() == userId) {
-                isExistUser = true;
-                break;
-            }
-        }
-        return isExistUser;
     }
 }

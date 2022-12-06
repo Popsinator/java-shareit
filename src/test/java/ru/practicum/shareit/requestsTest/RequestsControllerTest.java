@@ -75,7 +75,7 @@ public class RequestsControllerTest {
 
     @Test
     void getAllItemRequestTest() throws Exception {
-        when(itemRequestService.getRequest(anyInt()))
+        when(itemRequestService.getRequests(anyInt()))
                 .thenReturn(listItemRequest);
 
         mvc.perform(get("/requests")
@@ -109,7 +109,7 @@ public class RequestsControllerTest {
 
     @Test
     void getAllItemRequestWithoutPaginationTest() throws Exception {
-        when(itemRequestService.getRequest(anyInt()))
+        when(itemRequestService.getRequests(anyInt()))
                 .thenReturn(listItemRequest);
 
         mvc.perform(get("/requests/all")

@@ -5,6 +5,7 @@ import lombok.Setter;
 import ru.practicum.shareit.user.User;
 
 @Getter
+
 @Setter
 public class ItemDto {
 

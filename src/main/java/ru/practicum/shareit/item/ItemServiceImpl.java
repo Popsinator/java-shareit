@@ -18,7 +18,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+
 @RequiredArgsConstructor
+
 @Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
 
@@ -156,7 +158,7 @@ public class ItemServiceImpl implements ItemService {
     public void checkItem(Item item) {
         if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner().getId() == 0) {
             throw new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец");
-        } else if (userRepository.findAll().stream().noneMatch(x -> x.getId() == item.getOwner().getId())) {
+        } else if (!userRepository.existsById(item.getOwner().getId())) {
             throw new NotFoundObjectException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }

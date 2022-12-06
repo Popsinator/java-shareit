@@ -42,9 +42,9 @@ public class ItemRequestServiceTest {
     private final User user = new User(1, "user", "user@user");
     private final User userErrorId = new User(99, "user", "user@user");
     private final Item item = new Item("test", "Description test", true, user, 1);
-    private final List<User> listUsers = List.of(user);
-    private final List<User> listUsersWithOtherId = List.of(userErrorId);
-    private final List<User> listUsersEmpty = List.of();
+    //private final List<User> listUsers = List.of(user);
+    //private final List<User> listUsersWithOtherId = List.of(userErrorId);
+    //private final List<User> listUsersEmpty = List.of();
     private final List<Item> listItems = List.of(item);
     private final ItemRequest itemRequest = new ItemRequest(1, "test", user, LocalDateTime.now(), listItems);
     private final ItemRequestDto itemRequestEmptyDescription = new ItemRequestDto(null, LocalDateTime.now(), null);
@@ -61,18 +61,18 @@ public class ItemRequestServiceTest {
     void createItemRequestTest() {
         Mockito.when(itemRequestReporistory.save(any()))
                 .thenReturn(itemRequest);
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(userRepository.findUserByIdEquals(anyInt()))
                 .thenReturn(user);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(itemRequest.getId(), itemRequestService.createItemRequest(itemRequestDto, user.getId()).getId());
         Assertions.assertEquals(itemRequest.getDescription(), itemRequestService.createItemRequest(itemRequestDto, user.getId()).getDescription());
     }
 
     @Test
     void createNewItemRequestWithEmptyDescriptionTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         final EmptyDescriptionReuestException exception = Assertions.assertThrows(
                 EmptyDescriptionReuestException.class,
@@ -83,8 +83,8 @@ public class ItemRequestServiceTest {
 
     @Test
     void checkUserIdExceptionTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsersEmpty);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(false);
 
         final IdItemOrUserNotExistException exception = Assertions.assertThrows(
                 IdItemOrUserNotExistException.class,
@@ -95,32 +95,32 @@ public class ItemRequestServiceTest {
 
     @Test
     void getItemRequestsTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(itemRepository.findAllByRequestIdEquals(anyInt()))
                 .thenReturn(listItems);
         Mockito.when(itemRequestReporistory.findByRequester_Id(anyInt()))
                 .thenReturn(listItemRequests);
-        Assertions.assertEquals(listItemRequests.size(), itemRequestService.getRequest(user.getId()).size());
-        Assertions.assertEquals(listItemRequests.get(0).getId(), itemRequestService.getRequest(user.getId()).get(0).getId());
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
+        Assertions.assertEquals(listItemRequests.size(), itemRequestService.getRequests(user.getId()).size());
+        Assertions.assertEquals(listItemRequests.get(0).getId(), itemRequestService.getRequests(user.getId()).get(0).getId());
     }
 
     @Test
     void getItemRequestsWithPaginationTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsersWithOtherId);
         Mockito.when(itemRepository.findAllByRequestIdEquals(anyInt()))
                 .thenReturn(listItems);
         Mockito.when(itemRequestReporistory.findAll((Pageable) any()))
                 .thenReturn(pageItemRequests);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(listItemRequests.size(), itemRequestService.getRequestWithPagination(userErrorId.getId(), 1, 1).size());
         Assertions.assertEquals(listItemRequests.get(0).getId(), itemRequestService.getRequestWithPagination(userErrorId.getId(), 1, 1).get(0).getId());
     }
 
     @Test
     void getItemRequestsWithExceptionTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         final InvalidParamsPaginationException exception = Assertions.assertThrows(
                 InvalidParamsPaginationException.class,
@@ -131,24 +131,24 @@ public class ItemRequestServiceTest {
 
     @Test
     void getItemRequestTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(itemRequestReporistory.findAll())
                 .thenReturn(listItemRequests);
         Mockito.when(itemRequestReporistory.findItemRequestByIdEquals(anyInt()))
                 .thenReturn(itemRequest);
         Mockito.when(itemRepository.findAllByRequestIdEquals(anyInt()))
                 .thenReturn(listItems);
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(itemRequest.getId(), itemRequestService.getRequestListOnRequesterId(itemRequest.getId(), user.getId()).getId());
         Assertions.assertEquals(itemRequest.getDescription(), itemRequestService.getRequestListOnRequesterId(itemRequest.getId(), user.getId()).getDescription());
     }
 
     @Test
     void getNotExistItemRequestTest() {
-        Mockito.when(userRepository.findAll())
-                .thenReturn(listUsers);
         Mockito.when(itemRequestReporistory.findAll())
                 .thenReturn(List.of());
+        Mockito.when(userRepository.existsById(anyInt()))
+                .thenReturn(true);
 
         final IdItemRequestNotExistException exception = Assertions.assertThrows(
                 IdItemRequestNotExistException.class,

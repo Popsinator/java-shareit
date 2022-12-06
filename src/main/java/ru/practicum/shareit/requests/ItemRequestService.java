@@ -8,7 +8,7 @@ public interface ItemRequestService {
 
     ItemRequest createItemRequest(ItemRequestDto requestDto, int userId);
 
-    List<ItemRequest> getRequest(int userId);
+    List<ItemRequest> getRequests(int userId);
 
     List<ItemRequest> getRequestWithPagination(int userId, int from, int size);
 

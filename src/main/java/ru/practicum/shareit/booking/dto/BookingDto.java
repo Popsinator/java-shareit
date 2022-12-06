@@ -8,8 +8,11 @@ import ru.practicum.shareit.user.User;
 import java.time.LocalDateTime;
 
 @Getter
+
 @Setter
+
 @AllArgsConstructor
+
 @NoArgsConstructor
 public class BookingDto {
 

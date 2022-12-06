@@ -14,10 +14,13 @@ import ru.practicum.shareit.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+
 @RequiredArgsConstructor
+
 @Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
 
@@ -33,7 +36,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundObjectException(String.format("Вещи с идентификатором %s не существует.", booking.getItemId()));
         } else if (!itemRepository.findItemByIdEquals(booking.getItemId()).getAvailable()) {
             throw new ItemIdStatusUnavailableException(String.format("Вещь с id %s недоступна для бронирования", booking.getItemId()));
-        } else if (userRepository.findAll().stream().noneMatch(x -> x.getId() == userId)) {
+        } else if (!userRepository.existsById(userId)) {
             throw new NotFoundObjectException(String.format("Владельца с идентификатором %s не существует.", userId));
         } else if ((booking.getEnd().isBefore(booking.getStart())
                 || booking.getStart().isBefore(real) || booking.getEnd().isBefore(real)) && booking.getId() == 0) {
@@ -85,8 +88,9 @@ public class BookingServiceImpl implements BookingService {
         State stateAfterCheck = checkStatus(state);
         Collection<BookingDto> bookingDtos = new ArrayList<>();
         Collection<Booking> temp;
-        if (from == null || size == null) {
-            temp = bookingRepository.findAll().stream().filter(x -> x.getBooker().getId() == userId).collect(Collectors.toList());
+        if (Objects.equals(from, "") || Objects.equals(size, "")) {
+            temp = new ArrayList<>(bookingRepository.findAllByBooker_Id(userId));
+            //temp = bookingRepository.findAll().stream().filter(x -> x.getBooker().getId() == userId).collect(Collectors.toList());
         } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
             throw new InvalidParamsPaginationException("Некорректные параметры пагинации.");
         } else {
@@ -126,7 +130,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public void checkUserId(int userId) {
-        if (userRepository.findAll().stream().noneMatch(x -> x.getId() == userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundObjectException(String.format(
                     "Пользователя с идентификатором %s не существует.", userId));
         }
