@@ -55,7 +55,7 @@ public class RequestControllerErrorTest {
     @Test
     void createNewItemRequestWithEmptyDescriptionTest() throws Exception {
         when(itemRequestService.createItemRequest(any(), anyInt()))
-                .thenThrow(EmptyDescriptionReuestException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(post("/requests")
                         .header("X-Sharer-User-Id", 1)
@@ -69,7 +69,7 @@ public class RequestControllerErrorTest {
     @Test
     void getItemRequestsWithIncorrectParamPaginationTest() throws Exception {
         when(itemRequestService.getRequestWithPagination(anyInt(), anyInt(), anyInt()))
-                .thenThrow(InvalidParamsPaginationException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(get("/requests/all")
                         .header("X-Sharer-User-Id", 1)
@@ -85,7 +85,7 @@ public class RequestControllerErrorTest {
     @Test
     void getItemRequestWithNotExistItemRequestTest() throws Exception {
         when(itemRequestService.getRequestListOnRequesterId(anyInt(), anyInt()))
-                .thenThrow(IdItemRequestNotExistException.class);
+                .thenThrow(NotFoundException.class);
 
         mvc.perform(get("/requests/" + 1)
                         .header("X-Sharer-User-Id", 1)
@@ -99,7 +99,7 @@ public class RequestControllerErrorTest {
     @Test
     void getItemRequestWithNotExistUserTest() throws Exception {
         when(itemRequestService.getRequestListOnRequesterId(anyInt(), anyInt()))
-                .thenThrow(IdItemOrUserNotExistException.class);
+                .thenThrow(NotFoundException.class);
 
         mvc.perform(get("/requests/" + 1)
                         .header("X-Sharer-User-Id", 1)

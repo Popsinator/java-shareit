@@ -68,12 +68,7 @@ public class BookingServiceTest {
 
     private final BookingDtoIn bookingDtoInBeforeDateReal = new BookingDtoIn(0, LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(1), 1, Status.APPROVED);
 
-    private final List<Item> listItems = List.of(item);
-    private final List<Item> listItemsEmpty = List.of();
-
     private final List<Booking> listBookings = List.of(booking);
-
-    private final List<Booking> listBookingsEmpty = List.of();
 
     Page<Booking> pageBooking = new PageImpl<>(listBookings);
 
@@ -93,8 +88,8 @@ public class BookingServiceTest {
                 .thenReturn(item);
         Mockito.when(userRepository.findUserByIdEquals(anyInt()))
                 .thenReturn(user);
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(true);
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
         Assertions.assertEquals(booking.getId(), bookingService.createBooking(userNotOwner.getId(), bookingDtoIn).getId());
@@ -102,11 +97,11 @@ public class BookingServiceTest {
 
     @Test
     void createNewBookingErrorWithItemNotExistTest() {
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItemsEmpty);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(false);
 
-        final NotFoundObjectException exception = Assertions.assertThrows(
-                NotFoundObjectException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> bookingService.createBooking(userNotOwner.getId(), bookingDtoIn));
 
         Assertions.assertEquals(String.format("Вещи с идентификатором %s не существует.", bookingDtoIn.getItemId()), exception.getMessage());
@@ -114,13 +109,13 @@ public class BookingServiceTest {
 
     @Test
     void createNewBookingErrorWithItemNotAvailableTest() {
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(true);
         Mockito.when(itemRepository.findItemByIdEquals(anyInt()))
                 .thenReturn(itemNotAvailable);
 
-        final ItemIdStatusUnavailableException exception = Assertions.assertThrows(
-                ItemIdStatusUnavailableException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> bookingService.createBooking(userNotOwner.getId(), bookingDtoIn));
 
         Assertions.assertEquals(String.format("Вещь с id %s недоступна для бронирования", bookingDtoIn.getItemId()), exception.getMessage());
@@ -128,15 +123,15 @@ public class BookingServiceTest {
 
     @Test
     void createNewBookingErrorWithUserNotExistTest() {
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(true);
         Mockito.when(itemRepository.findItemByIdEquals(anyInt()))
                 .thenReturn(item);
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(false);
 
-        final NotFoundObjectException exception = Assertions.assertThrows(
-                NotFoundObjectException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> bookingService.createBooking(userNotOwner.getId(), bookingDtoIn));
 
         Assertions.assertEquals(String.format("Владельца с идентификатором %s не существует.", userErrorId.getId()), exception.getMessage());
@@ -144,15 +139,15 @@ public class BookingServiceTest {
 
     @Test
     void createNewBookingErrorWithIncorrectDateTest() {
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(true);
         Mockito.when(itemRepository.findItemByIdEquals(anyInt()))
                 .thenReturn(item);
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
-        final DateTimeBookingException exception = Assertions.assertThrows(
-                DateTimeBookingException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> bookingService.createBooking(user.getId(), bookingDtoInBeforeDateReal));
 
         Assertions.assertEquals("Даты бронирования некорректно заданы", exception.getMessage());
@@ -160,15 +155,15 @@ public class BookingServiceTest {
 
     @Test
     void createNewBookingErrorWithIncorrectOwnerTest() {
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(true);
         Mockito.when(itemRepository.findItemByIdEquals(anyInt()))
                 .thenReturn(item);
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
-        final InvalidHeaderUserId exception = Assertions.assertThrows(
-                InvalidHeaderUserId.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> bookingService.createBooking(user.getId(), bookingDtoIn));
 
         Assertions.assertEquals("Некорректный владелец item в заголовке 'X-Sharer-User-Id'", exception.getMessage());
@@ -199,8 +194,8 @@ public class BookingServiceTest {
         Mockito.when(bookingRepository.findBookingByIdEquals(anyInt()))
                 .thenReturn(bookingStatusWaiting);
 
-        final InvalidStateBookingException exception = Assertions.assertThrows(
-                InvalidStateBookingException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> bookingService.changeStatusOnApprovedOrRejected(booking.getId(), user.getId(), null));
 
         Assertions.assertEquals("Отсутствует статус в заголовке", exception.getMessage());
@@ -212,8 +207,8 @@ public class BookingServiceTest {
         Mockito.when(bookingRepository.findBookingByIdEquals(anyInt()))
                 .thenReturn(bookingStatusWaiting);
 
-        final InvalidHeaderUserId exception = Assertions.assertThrows(
-                InvalidHeaderUserId.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> bookingService.changeStatusOnApprovedOrRejected(booking.getId(), userErrorId.getId(), "true"));
 
         Assertions.assertEquals("Некорректный владелец item в заголовке 'X-Sharer-User-Id'", exception.getMessage());
@@ -224,8 +219,8 @@ public class BookingServiceTest {
         Mockito.when(bookingRepository.findBookingByIdEquals(anyInt()))
                 .thenReturn(booking);
 
-        final InvalidPatchBookingException exception = Assertions.assertThrows(
-                InvalidPatchBookingException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> bookingService.changeStatusOnApprovedOrRejected(booking.getId(), user.getId(), "true"));
 
         Assertions.assertEquals("Бронирование уже на статусе APPROVED", exception.getMessage());
@@ -235,8 +230,8 @@ public class BookingServiceTest {
     void getBookingCompleteTest() {
         Mockito.when(bookingRepository.findBookingByIdEquals(anyInt()))
                 .thenReturn(booking);
-        Mockito.when(bookingRepository.findAll())
-                .thenReturn(listBookings);
+        Mockito.when(bookingRepository.existsById(anyInt()))
+                .thenReturn(true);
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
@@ -274,8 +269,8 @@ public class BookingServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
-        final InvalidParamsPaginationException exception = Assertions.assertThrows(
-                InvalidParamsPaginationException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> bookingService.getAllBookings(user.getId(), "ALL", "0", "0"));
 
         Assertions.assertEquals("Некорректные параметры пагинации.", exception.getMessage());
@@ -301,10 +296,10 @@ public class BookingServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
-        Assertions.assertEquals(listBookings.size(), bookingService.getAllBookingsOwner(user.getId(), "ALL", null, null).size());
-        Assertions.assertEquals(listBookings.get(0).getId(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", null, null)).get(0).getId());
-        Assertions.assertEquals(listBookings.get(0).getStatus(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", null, null)).get(0).getStatus());
-        Assertions.assertEquals(listBookings.get(0).getBooker(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", null, null)).get(0).getBooker());
+        Assertions.assertEquals(listBookings.size(), bookingService.getAllBookingsOwner(user.getId(), "ALL", "", "").size());
+        Assertions.assertEquals(listBookings.get(0).getId(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", "", "")).get(0).getId());
+        Assertions.assertEquals(listBookings.get(0).getStatus(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", "", "")).get(0).getStatus());
+        Assertions.assertEquals(listBookings.get(0).getBooker(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", "", "")).get(0).getBooker());
     }
 
     @Test
@@ -312,8 +307,8 @@ public class BookingServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
-        final InvalidParamsPaginationException exception = Assertions.assertThrows(
-                InvalidParamsPaginationException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> bookingService.getAllBookingsOwner(user.getId(), "ALL", "0", "0"));
 
         Assertions.assertEquals("Некорректные параметры пагинации.", exception.getMessage());
@@ -324,8 +319,8 @@ public class BookingServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(false);
 
-        final NotFoundObjectException exception = Assertions.assertThrows(
-                NotFoundObjectException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> bookingService.checkUserId(userErrorId.getId()));
 
         Assertions.assertEquals(String.format(
@@ -337,8 +332,8 @@ public class BookingServiceTest {
         Mockito.when(bookingRepository.findBookingByIdEquals(booking.getId()))
                 .thenReturn(booking);
 
-        final InvalidHeaderUserId exception = Assertions.assertThrows(
-                InvalidHeaderUserId.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> bookingService.checkUserAndBookerId(userErrorId.getId(), booking.getId()));
 
         Assertions.assertEquals(String.format(
@@ -348,11 +343,11 @@ public class BookingServiceTest {
 
     @Test
     void checkBookingIdExceptionTest() {
-        Mockito.when(bookingRepository.findAll())
-                .thenReturn(listBookingsEmpty);
+        Mockito.when(bookingRepository.existsById(anyInt()))
+                .thenReturn(false);
 
-        final NotFoundObjectException exception = Assertions.assertThrows(
-                NotFoundObjectException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> bookingService.checkBookingId(booking.getId()));
 
         Assertions.assertEquals(String.format(
@@ -367,8 +362,8 @@ public class BookingServiceTest {
         Assertions.assertEquals(State.FUTURE, bookingService.checkStatus("FUTURE"));
         Assertions.assertEquals(State.PAST, bookingService.checkStatus("PAST"));
 
-        final InvalidStateBookingException exception = Assertions.assertThrows(
-                InvalidStateBookingException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> bookingService.checkStatus("UNKNOWN"));
 
         Assertions.assertEquals("Unknown state: UNKNOWN", exception.getMessage());

@@ -8,10 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
-import ru.practicum.shareit.exception.EmptyDescriptionReuestException;
-import ru.practicum.shareit.exception.IdItemOrUserNotExistException;
-import ru.practicum.shareit.exception.IdItemRequestNotExistException;
-import ru.practicum.shareit.exception.InvalidParamsPaginationException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.requests.ItemRequest;
@@ -42,9 +39,6 @@ public class ItemRequestServiceTest {
     private final User user = new User(1, "user", "user@user");
     private final User userErrorId = new User(99, "user", "user@user");
     private final Item item = new Item("test", "Description test", true, user, 1);
-    //private final List<User> listUsers = List.of(user);
-    //private final List<User> listUsersWithOtherId = List.of(userErrorId);
-    //private final List<User> listUsersEmpty = List.of();
     private final List<Item> listItems = List.of(item);
     private final ItemRequest itemRequest = new ItemRequest(1, "test", user, LocalDateTime.now(), listItems);
     private final ItemRequestDto itemRequestEmptyDescription = new ItemRequestDto(null, LocalDateTime.now(), null);
@@ -74,8 +68,8 @@ public class ItemRequestServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
-        final EmptyDescriptionReuestException exception = Assertions.assertThrows(
-                EmptyDescriptionReuestException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> itemRequestService.createItemRequest(itemRequestEmptyDescription, user.getId()));
 
         Assertions.assertEquals("Запрос не содержит описания.", exception.getMessage());
@@ -86,8 +80,8 @@ public class ItemRequestServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(false);
 
-        final IdItemOrUserNotExistException exception = Assertions.assertThrows(
-                IdItemOrUserNotExistException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> itemRequestService.createItemRequest(itemRequestDto, user.getId()));
 
         Assertions.assertEquals(String.format("Пользователь с данным id %s не зарегистрирован.", user.getId()), exception.getMessage());
@@ -109,7 +103,7 @@ public class ItemRequestServiceTest {
     void getItemRequestsWithPaginationTest() {
         Mockito.when(itemRepository.findAllByRequestIdEquals(anyInt()))
                 .thenReturn(listItems);
-        Mockito.when(itemRequestReporistory.findAll((Pageable) any()))
+        Mockito.when(itemRequestReporistory.findAllByRequester_IdNot(anyInt(), (Pageable) any()))
                 .thenReturn(pageItemRequests);
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
@@ -122,8 +116,8 @@ public class ItemRequestServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
-        final InvalidParamsPaginationException exception = Assertions.assertThrows(
-                InvalidParamsPaginationException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> itemRequestService.getRequestWithPagination(user.getId(), 0, 0));
 
         Assertions.assertEquals("Некорректные параметры пагинации.", exception.getMessage());
@@ -131,8 +125,8 @@ public class ItemRequestServiceTest {
 
     @Test
     void getItemRequestTest() {
-        Mockito.when(itemRequestReporistory.findAll())
-                .thenReturn(listItemRequests);
+        Mockito.when(itemRequestReporistory.existsById(anyInt()))
+                .thenReturn(true);
         Mockito.when(itemRequestReporistory.findItemRequestByIdEquals(anyInt()))
                 .thenReturn(itemRequest);
         Mockito.when(itemRepository.findAllByRequestIdEquals(anyInt()))
@@ -145,13 +139,13 @@ public class ItemRequestServiceTest {
 
     @Test
     void getNotExistItemRequestTest() {
-        Mockito.when(itemRequestReporistory.findAll())
-                .thenReturn(List.of());
+        Mockito.when(itemRequestReporistory.existsById(anyInt()))
+                .thenReturn(false);
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(true);
 
-        final IdItemRequestNotExistException exception = Assertions.assertThrows(
-                IdItemRequestNotExistException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> itemRequestService.getRequestListOnRequesterId(99, user.getId()));
 
         Assertions.assertEquals(String.format("Запрос с данным id %s не зарегистрирован.", 99), exception.getMessage());

@@ -38,21 +38,9 @@ public class ItemControllerErrorTest {
 
     private MockMvc mvc;
 
-    private final Item item = new Item(
-            1,
-            "",
-            "",
-            true,
-            null,
-            null
-    );
+    private final Item item = new Item(1, "", "", true, null, null);
 
-    private final CommentDto commentDto = new CommentDto(
-            1,
-            "",
-            "user",
-            ""
-    );
+    private final CommentDto commentDto = new CommentDto(1, "", "user", "");
 
     @BeforeEach
     void setUp() {
@@ -66,7 +54,7 @@ public class ItemControllerErrorTest {
     @Test
     void saveNewItemWithEmptyItemNameTest() throws Exception {
         when(itemService.createItem(any(), anyInt()))
-                .thenThrow(EmptyFieldItemException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(post("/items")
                         .header("X-Sharer-User-Id", 1)
@@ -80,7 +68,7 @@ public class ItemControllerErrorTest {
     @Test
     void updateItemTestWithEmptyHeaderUserId() throws Exception {
         when(itemService.updateItem(any(), anyInt(), anyInt()))
-                .thenThrow(EmptyHeaderUserId.class);
+                .thenThrow(InternalServerErrorException.class);
 
         mvc.perform(patch("/items/" + item.getId())
                         .header("X-Sharer-User-Id", 1)
@@ -94,7 +82,7 @@ public class ItemControllerErrorTest {
     @Test
     void getNotExistItemTest() throws Exception {
         when(itemService.getItem(anyInt(), anyInt()))
-                .thenThrow(IdItemOrUserNotExistException.class);
+                .thenThrow(NotFoundException.class);
 
         mvc.perform(get("/items/" + anyInt())
                         .header("X-Sharer-User-Id", anyInt())
@@ -108,7 +96,7 @@ public class ItemControllerErrorTest {
     @Test
     void saveNewCommentWithEmptyTextTest() throws Exception {
         when(itemService.createComment(any(), eq(1), eq(1)))
-                .thenThrow(EmptyCommentTextException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(post("/items/" + 1 + "/comment")
                         .header("X-Sharer-User-Id", 1)
@@ -122,7 +110,7 @@ public class ItemControllerErrorTest {
     @Test
     void saveNewCommentWithEmptyBookingUserTest() throws Exception {
         when(itemService.createComment(any(), eq(1), eq(1)))
-                .thenThrow(NotBookingForUserException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(post("/items/" + 1 + "/comment")
                         .header("X-Sharer-User-Id", 1)

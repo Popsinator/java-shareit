@@ -42,83 +42,25 @@ public class ItemServiceTest {
 
     private ItemServiceImpl itemService;
 
-    private final User user = new User(
-            1,
-            "user",
-            "user@user"
-    );
+    private final User user = new User(1, "user", "user@user");
 
-    private final User userErrorId = new User(
-            99,
-            "user",
-            "user@user"
-    );
+    private final User userErrorId = new User(99, "user", "user@user");
 
-    private final Item item = new Item(
-            "test",
-            "Description test",
-            true,
-            user,
-            1
-    );
+    private final Item item = new Item("test", "Description test", true, user, 1);
 
-    private final Item itemWithoutName = new Item(
-            "",
-            "Description test",
-            true,
-            user,
-            1
-    );
+    private final Item itemWithoutName = new Item("", "Description test", true, user, 1);
 
-    private final Item itemNotExistUser = new Item(
-            "test",
-            "Description test",
-            true,
-            userErrorId,
-            1
-    );
+    private final Item itemNotExistUser = new Item("test", "Description test", true, userErrorId, 1);
 
-    private final Item itemErrorId = new Item(
-            "test",
-            "Description test",
-            true,
-            userErrorId,
-            1
-    );
+    private final Item itemErrorId = new Item("test", "Description test", true, userErrorId, 1);
 
-    private final Booking booking = new Booking(
-            1,
-            LocalDateTime.now().plusDays(1),
-            LocalDateTime.now().plusDays(2),
-            Status.APPROVED,
-            user,
-            item
-    );
+    private final Booking booking = new Booking(1, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), Status.APPROVED, user, item);
 
-    private final Booking bookingBeforeDateReal = new Booking(
-            1,
-            LocalDateTime.now().minusDays(2),
-            LocalDateTime.now().minusDays(1),
-            Status.APPROVED,
-            user,
-            item
-    );
+    private final Booking bookingBeforeDateReal = new Booking(1, LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(1), Status.APPROVED, user, item);
 
-    private final Comment comment = new Comment(
-            1,
-            "text",
-            item,
-            user
-    );
+    private final Comment comment = new Comment(1, "text", item, user);
 
-    private final Comment commentWithoutText = new Comment(
-            1,
-            "",
-            item,
-            user
-    );
-
-    private final List<User> listUsers = List.of(user);
+    private final Comment commentWithoutText = new Comment(1, "", item, user);
 
     private final List<Item> listItems = List.of(item);
 
@@ -157,12 +99,12 @@ public class ItemServiceTest {
                 .thenReturn(item);
         Mockito.when(itemRepository.findItemByIdEquals(item.getId()))
                 .thenReturn(item);
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listBookings);
-        Mockito.when(commentsRepository.findAll())
+        Mockito.when(commentsRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listComments);
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(item.getId(), itemService.updateItem(item, item.getId(), item.getOwner().getId()).getId());
         Assertions.assertEquals(item.getName(), itemService.updateItem(item, item.getId(), item.getOwner().getId()).getName());
         Assertions.assertEquals(item.getDescription(), itemService.updateItem(item, item.getId(), item.getOwner().getId()).getDescription());
@@ -172,8 +114,8 @@ public class ItemServiceTest {
 
     @Test
     void updateItemEmptyHeaderTest() {
-        final EmptyHeaderUserId exception = Assertions.assertThrows(
-                EmptyHeaderUserId.class,
+        final InternalServerErrorException exception = Assertions.assertThrows(
+                InternalServerErrorException.class,
                 () -> itemService.updateItem(item, item.getId(), null));
 
         Assertions.assertEquals("Отсутствует заголовок 'X-Sharer-User-Id'", exception.getMessage());
@@ -184,8 +126,8 @@ public class ItemServiceTest {
         Mockito.when(itemRepository.findItemByIdEquals(item.getId()))
                 .thenReturn(item);
 
-        final InvalidHeaderUserId exception = Assertions.assertThrows(
-                InvalidHeaderUserId.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> itemService.updateItem(item, item.getId(), userErrorId.getId()));
 
         Assertions.assertEquals("Некорректный владелец item в заголовке 'X-Sharer-User-Id'", exception.getMessage());
@@ -195,12 +137,12 @@ public class ItemServiceTest {
     void getItemWithEmptyBookingsTest() {
         Mockito.when(itemRepository.findItemByIdEquals(item.getId()))
                 .thenReturn(item);
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listBookingsEmpty);
-        Mockito.when(commentsRepository.findAll())
+        Mockito.when(commentsRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listComments);
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(item.getId(), itemService.getItem(item.getId(), item.getOwner().getId()).getId());
         Assertions.assertEquals(item.getName(), itemService.getItem(item.getId(), item.getOwner().getId()).getName());
         Assertions.assertEquals(item.getDescription(), itemService.getItem(item.getId(), item.getOwner().getId()).getDescription());
@@ -212,12 +154,12 @@ public class ItemServiceTest {
     void getItemWithUnEqualOwnerTest() {
         Mockito.when(itemRepository.findItemByIdEquals(item.getId()))
                 .thenReturn(item);
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listBookings);
-        Mockito.when(commentsRepository.findAll())
+        Mockito.when(commentsRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listComments);
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(true);
         Assertions.assertEquals(item.getId(), itemService.getItem(item.getId(), userErrorId.getId()).getId());
         Assertions.assertEquals(item.getName(), itemService.getItem(item.getId(), userErrorId.getId()).getName());
         Assertions.assertEquals(item.getDescription(), itemService.getItem(item.getId(), userErrorId.getId()).getDescription());
@@ -228,11 +170,11 @@ public class ItemServiceTest {
     @Test
     void createItemWithoutOwnerTest() {
         Mockito.when(itemServiceMock.createItem(itemNotExistUser, userErrorId.getId()))
-                .thenThrow(new NotFoundObjectException(String.format(
+                .thenThrow(new NotFoundException(String.format(
                         "Владельца с идентификатором %s не существует.", item.getOwner())));
 
-        final NotFoundObjectException exception = Assertions.assertThrows(
-                NotFoundObjectException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> itemServiceMock.createItem(itemNotExistUser, userErrorId.getId()));
 
         Assertions.assertEquals(String.format(
@@ -243,15 +185,15 @@ public class ItemServiceTest {
     void getNotExistItemTest() {
         Mockito.when(itemRepository.findItemByIdEquals(itemErrorId.getId()))
                 .thenReturn(item);
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listBookings);
-        Mockito.when(commentsRepository.findAll())
+        Mockito.when(commentsRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listComments);
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
+        Mockito.when(itemRepository.existsById(anyInt()))
+                .thenReturn(false);
 
-        final IdItemOrUserNotExistException exception = Assertions.assertThrows(
-                IdItemOrUserNotExistException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> itemService.getItem(itemErrorId.getId(), userErrorId.getId()));
 
         Assertions.assertEquals(String.format(
@@ -259,22 +201,10 @@ public class ItemServiceTest {
     }
 
     @Test
-    void getAllItemsTest() {
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
-        Assertions.assertEquals(listItems.size(), itemService.findAllItem().size());
-        Assertions.assertEquals(listItems.get(0).getId(), new ArrayList<>(itemService.findAllItem()).get(0).getId());
-        Assertions.assertEquals(listItems.get(0).getName(), new ArrayList<>(itemService.findAllItem()).get(0).getName());
-        Assertions.assertEquals(listItems.get(0).getDescription(), new ArrayList<>(itemService.findAllItem()).get(0).getDescription());
-        Assertions.assertEquals(listItems.get(0).getAvailable(), new ArrayList<>(itemService.findAllItem()).get(0).getAvailable());
-        Assertions.assertEquals(listItems.get(0).getOwner(), new ArrayList<>(itemService.findAllItem()).get(0).getOwner());
-    }
-
-    @Test
     void getAllItemsForUserTest() {
-        Mockito.when(itemRepository.findAll())
+        Mockito.when(itemRepository.findAllByOwner_Id(anyInt()))
                 .thenReturn(listItems);
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listBookingsBeforeRealDate);
         Assertions.assertEquals(listItems.size(), itemService.getAllItems(user.getId()).size());
         Assertions.assertEquals(listItems.get(0).getId(), new ArrayList<>(itemService.getAllItems(user.getId())).get(0).getId());
@@ -286,9 +216,9 @@ public class ItemServiceTest {
 
     @Test
     void getAllItemsWithAddLastAndNextBookingForUserTest() {
-        Mockito.when(itemRepository.findAll())
+        Mockito.when(itemRepository.findAllByOwner_Id(anyInt()))
                 .thenReturn(listItems);
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByItem_Id(anyInt()))
                 .thenReturn(listBookingsBeforeRealDate);
         Assertions.assertEquals(listItems.size(), itemService.getAllItems(user.getId()).size());
         Assertions.assertEquals(listItems.get(0).getId(), new ArrayList<>(itemService.getAllItems(user.getId())).get(0).getId());
@@ -325,7 +255,7 @@ public class ItemServiceTest {
                 .thenReturn(user);
         Mockito.when(commentsRepository.save(any()))
                 .thenReturn(comment);
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByItem_IdAndAndBooker_Id(anyInt(), anyInt()))
                 .thenReturn(listBookingsBeforeRealDateForTestComments);
         CommentDto commentDto = ItemMapper.toDtoComment(comment, user.getName(), "");
         Assertions.assertEquals(commentDto.getId(), itemService.createComment(comment, user.getId(), item.getId()).getId());
@@ -336,8 +266,8 @@ public class ItemServiceTest {
 
     @Test
     void createCommentCompleteWithoutTextTest() {
-        final EmptyCommentTextException exception = Assertions.assertThrows(
-                EmptyCommentTextException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> itemService.createComment(commentWithoutText, user.getId(), item.getId()));
 
         Assertions.assertEquals("Пустой комментарий", exception.getMessage());
@@ -345,11 +275,11 @@ public class ItemServiceTest {
 
     @Test
     void createCommentWithoutBookingTest() {
-        Mockito.when(bookingRepository.findAll())
+        Mockito.when(bookingRepository.findAllByItem_IdAndAndBooker_Id(anyInt(), anyInt()))
                 .thenReturn(listBookings);
 
-        final NotBookingForUserException exception = Assertions.assertThrows(
-                NotBookingForUserException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> itemService.createComment(comment, user.getId(), item.getId()));
 
         Assertions.assertEquals(String.format("Отсутствуют бронирования у пользователя с идентификатором %s", user.getId()), exception.getMessage());
@@ -358,10 +288,10 @@ public class ItemServiceTest {
     @Test
     void createItemWithoutNameTest() {
         Mockito.when(itemServiceMock.createItem(itemWithoutName, user.getId()))
-                .thenThrow(new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец"));
+                .thenThrow(new BadRequestException("Отсутствует имя, описание, статус или владелец"));
 
-        final EmptyFieldItemException exception = Assertions.assertThrows(
-                EmptyFieldItemException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> itemServiceMock.createItem(itemWithoutName, user.getId()));
 
         Assertions.assertEquals("Отсутствует имя, описание, статус или владелец", exception.getMessage());
@@ -369,8 +299,8 @@ public class ItemServiceTest {
 
     @Test
     void checkItemWithoutNameTest() {
-        final EmptyFieldItemException exception = Assertions.assertThrows(
-                EmptyFieldItemException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> itemService.createItem(itemWithoutName, user.getId()));
 
         Assertions.assertEquals("Отсутствует имя, описание, статус или владелец", exception.getMessage());
@@ -381,25 +311,11 @@ public class ItemServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(false);
 
-        final NotFoundObjectException exception = Assertions.assertThrows(
-                NotFoundObjectException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> itemService.checkItem(itemNotExistUser));
 
         Assertions.assertEquals(String.format(
                 "Владельца с идентификатором %s не существует.", itemNotExistUser.getOwner()), exception.getMessage());
-    }
-
-    @Test
-    void checkItemIdTest() {
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
-        Assertions.assertTrue(itemService.checkItemId(item.getId()));
-    }
-
-    @Test
-    void checkItemIdFalseTest() {
-        Mockito.when(itemRepository.findAll())
-                .thenReturn(listItems);
-        Assertions.assertFalse(itemService.checkItemId(itemErrorId.getId()));
     }
 }

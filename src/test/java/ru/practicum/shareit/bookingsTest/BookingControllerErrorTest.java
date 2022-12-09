@@ -38,13 +38,7 @@ public class BookingControllerErrorTest {
 
     private MockMvc mvc;
 
-    private final BookingDtoIn bookingNotExistItem = new BookingDtoIn(
-            1,
-            LocalDateTime.now().plusDays(1),
-            LocalDateTime.now().plusDays(2),
-            99,
-            Status.APPROVED
-    );
+    private final BookingDtoIn bookingNotExistItem = new BookingDtoIn(1, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), 99, Status.APPROVED);
 
     @BeforeEach
     void setUp() {
@@ -58,7 +52,7 @@ public class BookingControllerErrorTest {
     @Test
     void saveNewBookingWithErrorItemTest() throws Exception {
         when(bookingService.createBooking(anyInt(), any()))
-                .thenThrow(NotFoundObjectException.class);
+                .thenThrow(NotFoundException.class);
 
         mvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 1)
@@ -72,7 +66,7 @@ public class BookingControllerErrorTest {
     @Test
     void saveNewBookingWithItemBlockTest() throws Exception {
         when(bookingService.createBooking(anyInt(), any()))
-                .thenThrow(ItemIdStatusUnavailableException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 1)
@@ -86,7 +80,7 @@ public class BookingControllerErrorTest {
     @Test
     void saveNewBookingWithIncorrectDateTest() throws Exception {
         when(bookingService.createBooking(anyInt(), any()))
-                .thenThrow(DateTimeBookingException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 1)
@@ -100,7 +94,7 @@ public class BookingControllerErrorTest {
     @Test
     void saveNewBookingWithIncorrectHeaderUserIdTest() throws Exception {
         when(bookingService.createBooking(anyInt(), any()))
-                .thenThrow(InvalidHeaderUserId.class);
+                .thenThrow(NotFoundException.class);
 
         mvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 1)
@@ -114,7 +108,7 @@ public class BookingControllerErrorTest {
     @Test
     void updateBookingWithInvalidateStateTest() throws Exception {
         when(bookingService.changeStatusOnApprovedOrRejected(anyInt(), anyInt(), anyString()))
-                .thenThrow(InvalidStateBookingException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(patch("/bookings/" + bookingNotExistItem.getId())
                         .header("X-Sharer-User-Id", 1)
@@ -129,7 +123,7 @@ public class BookingControllerErrorTest {
     @Test
     void updateBookingWithAlreadyApprovedTest() throws Exception {
         when(bookingService.changeStatusOnApprovedOrRejected(anyInt(), anyInt(), anyString()))
-                .thenThrow(InvalidPatchBookingException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(patch("/bookings/" + bookingNotExistItem.getId())
                         .header("X-Sharer-User-Id", 1)
@@ -144,7 +138,7 @@ public class BookingControllerErrorTest {
     @Test
     void getAllBookingForUserTest() throws Exception {
         when(bookingService.getAllBookings(anyInt(), anyString(), anyString(), anyString()))
-                .thenThrow(InvalidParamsPaginationException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", 1)

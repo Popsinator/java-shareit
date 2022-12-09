@@ -7,9 +7,7 @@ import ru.practicum.shareit.requests.dto.ItemRequestDto;
 import java.util.List;
 
 @RestController
-
 @RequestMapping(path = "/requests")
-
 @RequiredArgsConstructor
 public class ItemRequestController {
 

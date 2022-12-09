@@ -11,8 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.ErrorHandler;
-import ru.practicum.shareit.exception.InvalidMaleUserException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserController;
 import ru.practicum.shareit.user.UserServiceImpl;
@@ -37,11 +37,7 @@ public class UsersControllerErrorTest {
 
     private MockMvc mvc;
 
-    private final User user = new User(
-            1,
-            "",
-            ""
-    );
+    private final User user = new User(1, "", "");
 
     @BeforeEach
     void setUp() {
@@ -55,7 +51,7 @@ public class UsersControllerErrorTest {
     @Test
     void saveNewUserTest() throws Exception {
         when(userService.createUser(any()))
-                .thenThrow(InvalidMaleUserException.class);
+                .thenThrow(BadRequestException.class);
 
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(user))

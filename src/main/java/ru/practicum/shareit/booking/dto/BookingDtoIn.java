@@ -9,11 +9,8 @@ import ru.practicum.shareit.booking.Status;
 import java.time.LocalDateTime;
 
 @Getter
-
 @Setter
-
 @AllArgsConstructor
-
 @NoArgsConstructor
 public class BookingDtoIn {
 

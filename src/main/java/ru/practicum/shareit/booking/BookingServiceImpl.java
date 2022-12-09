@@ -18,9 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-
 @RequiredArgsConstructor
-
 @Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
 
@@ -32,17 +30,17 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking createBooking(int userId, BookingDtoIn booking) {
         LocalDateTime real = LocalDateTime.now();
-        if (itemRepository.findAll().stream().noneMatch(x -> x.getId() == booking.getItemId())) {
-            throw new NotFoundObjectException(String.format("Вещи с идентификатором %s не существует.", booking.getItemId()));
+        if (!itemRepository.existsById(booking.getItemId())) {
+            throw new NotFoundException(String.format("Вещи с идентификатором %s не существует.", booking.getItemId()));
         } else if (!itemRepository.findItemByIdEquals(booking.getItemId()).getAvailable()) {
-            throw new ItemIdStatusUnavailableException(String.format("Вещь с id %s недоступна для бронирования", booking.getItemId()));
+            throw new BadRequestException(String.format("Вещь с id %s недоступна для бронирования", booking.getItemId()));
         } else if (!userRepository.existsById(userId)) {
-            throw new NotFoundObjectException(String.format("Владельца с идентификатором %s не существует.", userId));
+            throw new NotFoundException(String.format("Владельца с идентификатором %s не существует.", userId));
         } else if ((booking.getEnd().isBefore(booking.getStart())
                 || booking.getStart().isBefore(real) || booking.getEnd().isBefore(real)) && booking.getId() == 0) {
-            throw new DateTimeBookingException("Даты бронирования некорректно заданы");
+            throw new BadRequestException("Даты бронирования некорректно заданы");
         } else if (itemRepository.findItemByIdEquals(booking.getItemId()).getOwner().getId() == userId) {
-            throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
+            throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         booking.setStatus(Status.WAITING);
         Booking test = BookingMapper.toBookingDtoIn(booking, userRepository.findUserByIdEquals(userId), itemRepository.findItemByIdEquals(booking.getItemId()));
@@ -54,11 +52,11 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto changeStatusOnApprovedOrRejected(int bookingId, int userId, String approved) {
         Booking existBooking = getBooking(bookingId, userId);
         if (approved == null) {
-            throw new InvalidStateBookingException("Отсутствует статус в заголовке");
+            throw new BadRequestException("Отсутствует статус в заголовке");
         } else if (existBooking.getItem().getOwner().getId() != userId) {
-            throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
+            throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         } else if (existBooking.getStatus().equals(Status.APPROVED)) {
-            throw new InvalidPatchBookingException("Бронирование уже на статусе APPROVED");
+            throw new BadRequestException("Бронирование уже на статусе APPROVED");
         } else if (approved.equals("true")) {
             existBooking.setStatus(Status.APPROVED);
         } else if (approved.equals("false")) {
@@ -90,9 +88,8 @@ public class BookingServiceImpl implements BookingService {
         Collection<Booking> temp;
         if (Objects.equals(from, "") || Objects.equals(size, "")) {
             temp = new ArrayList<>(bookingRepository.findAllByBooker_Id(userId));
-            //temp = bookingRepository.findAll().stream().filter(x -> x.getBooker().getId() == userId).collect(Collectors.toList());
         } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
-            throw new InvalidParamsPaginationException("Некорректные параметры пагинации.");
+            throw new BadRequestException("Некорректные параметры пагинации.");
         } else {
             int start = Integer.parseInt(from) / Integer.parseInt(size);
             temp = bookingRepository.findAllByBooker_Id(userId, PageRequest.of(start, Integer.parseInt(size), Sort.by(Sort.Direction.DESC, "start")))
@@ -111,10 +108,10 @@ public class BookingServiceImpl implements BookingService {
         State stateAfterCheck = checkStatus(state);
         Collection<BookingDto> bookingDtos = new ArrayList<>();
         Collection<Booking> bookingsFull;
-        if (from == null || size == null) {
+        if (Objects.equals(from, "") || Objects.equals(size, "")) {
             bookingsFull = bookingRepository.findAll();
         } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
-            throw new InvalidParamsPaginationException("Некорректные параметры пагинации.");
+            throw new BadRequestException("Некорректные параметры пагинации.");
         } else {
             int start = Integer.parseInt(from) / Integer.parseInt(size);
             bookingsFull = bookingRepository.findAllByItemOwner_Id(userId, PageRequest.of(start, Integer.parseInt(size), Sort.by(Sort.Direction.DESC, "start")))
@@ -131,7 +128,7 @@ public class BookingServiceImpl implements BookingService {
 
     public void checkUserId(int userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundObjectException(String.format(
+            throw new NotFoundException(String.format(
                     "Пользователя с идентификатором %s не существует.", userId));
         }
     }
@@ -139,15 +136,15 @@ public class BookingServiceImpl implements BookingService {
     public void checkUserAndBookerId(int userId, int bookingId) {
         if (bookingRepository.findBookingByIdEquals(bookingId).getBooker().getId() != userId
                 && bookingRepository.findBookingByIdEquals(bookingId).getItem().getOwner().getId() != userId) {
-            throw new InvalidHeaderUserId(String.format(
+            throw new NotFoundException(String.format(
                     "Пользователю с идентификатором %s бронирование с идентификатором "
                             + bookingId + " не принадлежит.", userId));
         }
     }
 
     public void checkBookingId(int bookingId) {
-        if (bookingRepository.findAll().stream().noneMatch(x -> x.getId() == bookingId)) {
-            throw new NotFoundObjectException(String.format(
+        if (!bookingRepository.existsById(bookingId)) {
+            throw new NotFoundException(String.format(
                     "Бронирования с идентификатором %s не существует.", bookingId));
         }
     }
@@ -166,7 +163,7 @@ public class BookingServiceImpl implements BookingService {
         } else if (state.equals("PAST")) {
             return State.PAST;
         } else {
-            throw new InvalidStateBookingException("Unknown state: " + state);
+            throw new BadRequestException("Unknown state: " + state);
         }
     }
 

@@ -11,15 +11,10 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
-
 @Setter
-
 @AllArgsConstructor
-
 @NoArgsConstructor
-
 @Entity
-
 @Table(name = "bookings", schema = "public")
 public class Booking {
 

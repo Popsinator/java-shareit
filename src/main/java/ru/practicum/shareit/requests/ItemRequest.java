@@ -9,15 +9,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-
 @Setter
-
 @AllArgsConstructor
-
 @NoArgsConstructor
-
 @Entity
-
 @Table(name = "requests", schema = "public")
 public class ItemRequest {
 

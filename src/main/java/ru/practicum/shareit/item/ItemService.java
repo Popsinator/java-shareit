@@ -16,7 +16,7 @@ public interface ItemService {
 
     Collection<Item> findItemsOnDescription(String text);
 
-    Collection<Item> findAllItem();
+    //Collection<Item> findAllItem();
 
     void deleteItem(int itemId);
 

@@ -8,9 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import java.util.Collection;
 
 @RestController
-
 @RequiredArgsConstructor
-
 @RequestMapping(path = "/bookings")
 public class BookingController {
 
@@ -50,6 +48,10 @@ public class BookingController {
                                                             @RequestParam(required = false) String state,
                                                             @RequestParam(required = false) String from,
                                                             @RequestParam(required = false) String size) {
+        if (from == null || size == null) {
+            from = "";
+            size = "";
+        }
         return bookingService.getAllBookingsOwner(userId, state, from, size);
     }
 }

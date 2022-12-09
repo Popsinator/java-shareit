@@ -6,9 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 
 @RestController
-
 @RequiredArgsConstructor
-
 @RequestMapping(path = "/users")
 public class UserController {
 

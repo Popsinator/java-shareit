@@ -33,11 +33,7 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mvc;
 
-    private final User user = new User(
-            1,
-            "user",
-            "user@user"
-    );
+    private final User user = new User(1, "user", "user@user");
 
     private final List<User> listUsers = List.of(user);
 

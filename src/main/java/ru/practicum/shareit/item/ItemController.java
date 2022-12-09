@@ -7,9 +7,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import java.util.Collection;
 
 @RestController
-
 @RequestMapping("/items")
-
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;

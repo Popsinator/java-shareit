@@ -12,5 +12,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Item findItemByIdEquals(int id);
 
+    List<Item> findAllByOwner_Id(int userId);
+
+    boolean existsById(int itemId);
+
     void deleteItemById(int id);
 }

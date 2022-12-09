@@ -5,10 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.EmptyDescriptionReuestException;
-import ru.practicum.shareit.exception.IdItemOrUserNotExistException;
-import ru.practicum.shareit.exception.IdItemRequestNotExistException;
-import ru.practicum.shareit.exception.InvalidParamsPaginationException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
 import ru.practicum.shareit.user.UserRepository;
@@ -19,9 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-
 @RequiredArgsConstructor
-
 @Transactional(readOnly = true)
 public class ItemRequestServiceImpl implements ItemRequestService {
 
@@ -34,7 +29,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public ItemRequest createItemRequest(ItemRequestDto requestDto, int userId) {
         checkUserId(userId);
         if (requestDto.getDescription() == null) {
-            throw new EmptyDescriptionReuestException("Запрос не содержит описания.");
+            throw new BadRequestException("Запрос не содержит описания.");
         }
         ItemRequest temp = RequestMapper.toItemRequestDto(requestDto, userRepository.findUserByIdEquals(userId));
         temp.setCreated(LocalDateTime.now());
@@ -53,10 +48,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequest> getRequestWithPagination(int userId, int from, int size) {
         checkUserId(userId);
         if ((from == 0 && size == 0) || from < 0 || size < 0) {
-            throw new InvalidParamsPaginationException("Некорректные параметры пагинации.");
+            throw new BadRequestException("Некорректные параметры пагинации.");
         }
         int start = from / size;
-        List<ItemRequest> requestList = requestReporistory.findAll(PageRequest.of(start, size, Sort.by("created"))).stream().filter(x -> x.getRequester().getId() != userId).collect(Collectors.toList());
+        List<ItemRequest> requestList = requestReporistory.findAllByRequester_IdNot(userId, PageRequest.of(start, size, Sort.by("created"))).stream().collect(Collectors.toList());
         setItemListInRequestsList(requestList);
         return requestList;
     }
@@ -64,8 +59,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public ItemRequest getRequestListOnRequesterId(int requestId, int userId) {
         checkUserId(userId);
-        if (requestReporistory.findAll().stream().noneMatch(x -> x.getId() == requestId)) {
-            throw new IdItemRequestNotExistException(String.format(
+        if (!requestReporistory.existsById(requestId)) {
+            throw new NotFoundException(String.format(
                     "Запрос с данным id %s не зарегистрирован.", requestId));
         }
         ItemRequest request = requestReporistory.findItemRequestByIdEquals(requestId);
@@ -75,7 +70,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     public void checkUserId(int userId) {
         if (!userRepository.existsById(userId)) {
-            throw new IdItemOrUserNotExistException(String.format(
+            throw new NotFoundException(String.format(
                     "Пользователь с данным id %s не зарегистрирован.", userId));
         }
     }

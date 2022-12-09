@@ -8,8 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.shareit.exception.IdItemOrUserNotExistException;
-import ru.practicum.shareit.exception.InvalidMaleUserException;
+import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.UserServiceImpl;
@@ -30,35 +30,15 @@ public class UserServiceTest {
     @Mock
     UserServiceImpl userServiceMock;
 
-    private final User user = new User(
-            1,
-            "user",
-            "user@user"
-    );
+    private final User user = new User(1, "user", "user@user");
 
-    private final User userErrorEmail = new User(
-            1,
-            "user",
-            ""
-    );
+    private final User userErrorEmail = new User(1, "user", "");
 
-    private final User userErrorId = new User(
-            99,
-            "user",
-            "user@user"
-    );
+    private final User userErrorId = new User(99, "user", "user@user");
 
-    private final User userWithoutEmail = new User(
-            1,
-            "user",
-            null
-    );
+    private final User userWithoutEmail = new User(1, "user", null);
 
-    private final User userWithoutName = new User(
-            1,
-            null,
-            "user@user"
-    );
+    private final User userWithoutName = new User(1, null, "user@user");
 
     private final List<User> listUsers = List.of(user);
 
@@ -79,10 +59,10 @@ public class UserServiceTest {
     @Test
     void createNewUserWithErrorTest() {
         Mockito.when(userServiceMock.createUser(userErrorEmail))
-                .thenThrow(new InvalidMaleUserException("Введенный email отсутствует или некорректен"));
+                .thenThrow(new BadRequestException("Введенный email отсутствует или некорректен"));
 
-        final InvalidMaleUserException exception = Assertions.assertThrows(
-                InvalidMaleUserException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> userServiceMock.createUser(userErrorEmail));
 
         Assertions.assertEquals("Введенный email отсутствует или некорректен", exception.getMessage());
@@ -135,8 +115,8 @@ public class UserServiceTest {
         Mockito.when(userRepository.existsById(anyInt()))
                 .thenReturn(false);
 
-        final IdItemOrUserNotExistException exception = Assertions.assertThrows(
-                IdItemOrUserNotExistException.class,
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
                 () -> userService.getUser(userErrorId.getId()));
 
         Assertions.assertEquals(String.format(
@@ -162,8 +142,8 @@ public class UserServiceTest {
 
     @Test
     void checkUserTest() {
-        final InvalidMaleUserException exception = Assertions.assertThrows(
-                InvalidMaleUserException.class,
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
                 () -> userService.checkUser(userErrorEmail));
 
         Assertions.assertEquals("Введенный email отсутствует или некорректен", exception.getMessage());

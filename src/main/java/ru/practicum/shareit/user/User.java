@@ -7,11 +7,8 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Getter
-
 @Setter
-
 @Entity
-
 @Table(name = "users", schema = "public")
 public class User {
 

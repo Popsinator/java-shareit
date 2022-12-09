@@ -9,15 +9,10 @@ import ru.practicum.shareit.user.User;
 import javax.persistence.*;
 
 @Getter
-
 @Setter
-
 @AllArgsConstructor
-
 @NoArgsConstructor
-
 @Entity
-
 @Table(name = "comments", schema = "public")
 public class Comment {
 

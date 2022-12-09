@@ -34,21 +34,9 @@ public class ItemsControllerTest {
     @Autowired
     private MockMvc mvc;
 
-    private final Item item = new Item(
-            1,
-            "test",
-            "Description test",
-            true,
-            null,
-            null
-    );
+    private final Item item = new Item(1, "test", "Description test", true, null, null);
 
-    private final CommentDto commentDto = new CommentDto(
-            1,
-            "test",
-            "user",
-            ""
-    );
+    private final CommentDto commentDto = new CommentDto(1, "test", "user", "");
 
     private final List<Item> listUsers = List.of(item);
 
