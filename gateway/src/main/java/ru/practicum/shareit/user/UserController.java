@@ -3,9 +3,6 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collection;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/users")
