@@ -8,8 +8,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,11 +26,11 @@ public class BaseClient {
         return get(path, userId, null);
     }
 
-    protected ResponseEntity<Object> get(String path, @NonNull Map<String, Object> parameters) {
+    protected ResponseEntity<Object> get(String path, Map<String, Object> parameters) {
         return makeAndSendRequest(HttpMethod.GET, path, parameters, null);
     }
 
-    protected ResponseEntity<Object> get(String path, Integer userId, @Nullable Map<String, Object> parameters) {
+    protected ResponseEntity<Object> get(String path, Integer userId, Map<String, Object> parameters) {
         return makeAndSendRequest(HttpMethod.GET, path, userId, parameters, null);
     }
 
@@ -44,7 +42,7 @@ public class BaseClient {
         return post(path, userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> post(String path, Integer userId, @NonNull Map<String, Object> parameters, T body) {
+    protected <T> ResponseEntity<Object> post(String path, Integer userId, Map<String, Object> parameters, T body) {
         return makeAndSendRequest(HttpMethod.POST, path, userId, parameters, body);
     }
 
@@ -52,7 +50,7 @@ public class BaseClient {
         return put(path, userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> put(String path, int userId, @NonNull Map<String, Object> parameters, T body) {
+    protected <T> ResponseEntity<Object> put(String path, int userId, Map<String, Object> parameters, T body) {
         return makeAndSendRequest(HttpMethod.PUT, path, userId, parameters, body);
     }
 
@@ -68,7 +66,7 @@ public class BaseClient {
         return patch(path, userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> patch(String path, Integer userId, @NonNull Map<String, Object> parameters, T body) {
+    protected <T> ResponseEntity<Object> patch(String path, Integer userId, Map<String, Object> parameters, T body) {
         return makeAndSendRequest(HttpMethod.PATCH, path, userId, parameters, body);
     }
 
@@ -80,11 +78,11 @@ public class BaseClient {
         return delete(path, userId, null);
     }
 
-    protected ResponseEntity<Object> delete(String path, Integer userId, @NonNull Map<String, Object> parameters) {
+    protected ResponseEntity<Object> delete(String path, Integer userId, Map<String, Object> parameters) {
         return makeAndSendRequest(HttpMethod.DELETE, path, userId, parameters, null);
     }
 
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Integer userId, @Nullable Map<String, Object> parameters, @Nullable T body) {
+    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Integer userId, Map<String, Object> parameters, T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
         ResponseEntity<Object> shareitServerResponse;
@@ -100,7 +98,7 @@ public class BaseClient {
         return prepareGatewayResponse(shareitServerResponse);
     }
 
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, @NonNull Map<String, Object> parameters, @NonNull T body) {
+    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Map<String, Object> parameters, T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body);
 
         ResponseEntity<Object> shareitServerResponse;
