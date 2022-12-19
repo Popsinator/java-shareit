@@ -12,8 +12,6 @@ public interface ItemRequestReporistory extends JpaRepository<ItemRequest, Long>
 
     List<ItemRequest> findByRequester_Id(int userId);
 
-    //List<ItemRequest> findAllByRequester_IdNot(int userId);
-
     Page<ItemRequest> findAllByRequester_IdNot(int userId, Pageable pageable);
 
     boolean existsById(int requestId);
