@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,63 +27,59 @@ public class BaseClient {
         return get(path, userId, null);
     }
 
-    protected ResponseEntity<Object> get(String path, Map<String, Object> parameters) {
+    protected ResponseEntity<Object> get(String path, @Nullable Map<String, Object> parameters) {
         return makeAndSendRequest(path, parameters);
     }
 
-    protected ResponseEntity<Object> get(String path, Integer userId, Map<String, Object> parameters) {
+    protected ResponseEntity<Object> get(String path, Integer userId, @Nullable Map<String, Object> parameters) {
         return makeAndSendRequest(HttpMethod.GET, path, userId, parameters, null);
     }
 
     protected <T> ResponseEntity<Object> post(String path, T body) {
-        return post(path, null, null, body);
+        return post(path, null, body);
     }
 
     protected <T> ResponseEntity<Object> post(String path, int userId, T body) {
-        return post(path, userId, null, body);
+        return post(path, userId, body);
     }
 
-    protected <T> ResponseEntity<Object> post(String path, Integer userId, Map<String, Object> parameters, T body) {
-        return makeAndSendRequest(HttpMethod.POST, path, userId, parameters, body);
+    protected <T> ResponseEntity<Object> post(String path, Integer userId, T body) {
+        return makeAndSendRequest(HttpMethod.POST, path, userId, null, body);
     }
 
     protected <T> ResponseEntity<Object> put(String path, int userId, T body) {
         return put(path, userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> put(String path, int userId, Map<String, Object> parameters, T body) {
+    protected <T> ResponseEntity<Object> put(String path, int userId, @Nullable Map<String, Object> parameters, T body) {
         return makeAndSendRequest(HttpMethod.PUT, path, userId, parameters, body);
     }
 
     protected <T> ResponseEntity<Object> patch(String path, T body) {
-        return patch(path, null, null, body);
+        return patch(path, null, body);
     }
 
     protected <T> ResponseEntity<Object> patch(String path, int userId) {
-        return patch(path, userId, null, null);
+        return patch(path, userId, null);
     }
 
     protected <T> ResponseEntity<Object> patch(String path, int userId, T body) {
-        return patch(path, userId, null, body);
+        return patch(path, userId, body);
     }
 
-    protected <T> ResponseEntity<Object> patch(String path, Integer userId, Map<String, Object> parameters, T body) {
-        return makeAndSendRequest(HttpMethod.PATCH, path, userId, parameters, body);
+    protected <T> ResponseEntity<Object> patch(String path, Integer userId, T body) {
+        return makeAndSendRequest(HttpMethod.PATCH, path, userId, null, body);
     }
 
-    protected ResponseEntity<Object> delete(String path) {
-        return delete(path, null, null);
+    protected void delete(String path) {
+        delete(path, null);
     }
 
-    protected ResponseEntity<Object> delete(String path, int userId) {
-        return delete(path, userId, null);
+    protected ResponseEntity<Object> delete(String path, Integer userId) {
+        return makeAndSendRequest(HttpMethod.DELETE, path, userId, null, null);
     }
 
-    protected ResponseEntity<Object> delete(String path, Integer userId, Map<String, Object> parameters) {
-        return makeAndSendRequest(HttpMethod.DELETE, path, userId, parameters, null);
-    }
-
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Integer userId, Map<String, Object> parameters, T body) {
+    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Integer userId, @Nullable Map<String, Object> parameters, @Nullable T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
         ResponseEntity<Object> shareitServerResponse;
@@ -98,7 +95,7 @@ public class BaseClient {
         return prepareGatewayResponse(shareitServerResponse);
     }
 
-    private <T> ResponseEntity<Object> makeAndSendRequest(String path, Map<String, Object> parameters) {
+    private <T> ResponseEntity<Object> makeAndSendRequest(String path, @Nullable Map<String, Object> parameters) {
         HttpEntity<T> requestEntity = new HttpEntity<>(null);
 
         ResponseEntity<Object> shareitServerResponse;
