@@ -27,7 +27,7 @@ public class BaseClient {
     }
 
     protected ResponseEntity<Object> get(String path, Map<String, Object> parameters) {
-        return makeAndSendRequest(HttpMethod.GET, path, parameters, null);
+        return makeAndSendRequest(HttpMethod.GET, path, parameters);
     }
 
     protected ResponseEntity<Object> get(String path, Integer userId, Map<String, Object> parameters) {
@@ -98,8 +98,8 @@ public class BaseClient {
         return prepareGatewayResponse(shareitServerResponse);
     }
 
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Map<String, Object> parameters, T body) {
-        HttpEntity<T> requestEntity = new HttpEntity<>(body);
+    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Map<String, Object> parameters) {
+        HttpEntity<T> requestEntity = new HttpEntity<>(null);
 
         ResponseEntity<Object> shareitServerResponse;
         try {
