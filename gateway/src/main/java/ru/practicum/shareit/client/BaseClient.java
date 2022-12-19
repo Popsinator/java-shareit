@@ -27,7 +27,7 @@ public class BaseClient {
     }
 
     protected ResponseEntity<Object> get(String path, Map<String, Object> parameters) {
-        return makeAndSendRequest(HttpMethod.GET, path, parameters);
+        return makeAndSendRequest(path, parameters);
     }
 
     protected ResponseEntity<Object> get(String path, Integer userId, Map<String, Object> parameters) {
@@ -98,15 +98,15 @@ public class BaseClient {
         return prepareGatewayResponse(shareitServerResponse);
     }
 
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Map<String, Object> parameters) {
+    private <T> ResponseEntity<Object> makeAndSendRequest(String path, Map<String, Object> parameters) {
         HttpEntity<T> requestEntity = new HttpEntity<>(null);
 
         ResponseEntity<Object> shareitServerResponse;
         try {
             if (parameters != null) {
-                shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class, parameters);
+                shareitServerResponse = rest.exchange(path, HttpMethod.GET, requestEntity, Object.class, parameters);
             } else {
-                shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class);
+                shareitServerResponse = rest.exchange(path, HttpMethod.GET, requestEntity, Object.class);
             }
         } catch (HttpStatusCodeException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
