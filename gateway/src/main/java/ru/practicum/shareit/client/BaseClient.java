@@ -28,7 +28,7 @@ public class BaseClient {
         return get(path, userId, null);
     }
 
-    protected ResponseEntity<Object> get(String path, @Nullable Map<String, Object> parameters) {
+    protected ResponseEntity<Object> get(String path, @NonNull Map<String, Object> parameters) {
         return makeAndSendRequest(HttpMethod.GET, path, parameters, null);
     }
 
@@ -44,7 +44,7 @@ public class BaseClient {
         return post(path, userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> post(String path, Integer userId, @Nullable Map<String, Object> parameters, T body) {
+    protected <T> ResponseEntity<Object> post(String path, Integer userId, @NonNull Map<String, Object> parameters, T body) {
         return makeAndSendRequest(HttpMethod.POST, path, userId, parameters, body);
     }
 
@@ -52,7 +52,7 @@ public class BaseClient {
         return put(path, userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> put(String path, int userId, @Nullable Map<String, Object> parameters, T body) {
+    protected <T> ResponseEntity<Object> put(String path, int userId, @NonNull Map<String, Object> parameters, T body) {
         return makeAndSendRequest(HttpMethod.PUT, path, userId, parameters, body);
     }
 
@@ -68,7 +68,7 @@ public class BaseClient {
         return patch(path, userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> patch(String path, Integer userId, @Nullable Map<String, Object> parameters, T body) {
+    protected <T> ResponseEntity<Object> patch(String path, Integer userId, @NonNull Map<String, Object> parameters, T body) {
         return makeAndSendRequest(HttpMethod.PATCH, path, userId, parameters, body);
     }
 
@@ -80,7 +80,7 @@ public class BaseClient {
         return delete(path, userId, null);
     }
 
-    protected ResponseEntity<Object> delete(String path, Integer userId, @Nullable Map<String, Object> parameters) {
+    protected ResponseEntity<Object> delete(String path, Integer userId, @NonNull Map<String, Object> parameters) {
         return makeAndSendRequest(HttpMethod.DELETE, path, userId, parameters, null);
     }
 
