@@ -46,11 +46,13 @@ public class BookingController {
 													   @RequestParam(required = false) String state,
 													   @RequestParam(required = false) String from,
 													   @RequestParam(required = false) String size) {
-		if (from == null || size == null) {
-			from = "";
-			size = "";
+		if ((from == null || size == null) && state == null) {
+			return bookingClient.getAllBookingsWithoutParametersAndPagination("", userId);
+		} else if (state != null) {
+			return bookingClient.getAllBookingsWithoutPagination("", userId, state);
+		} else {
+			return bookingClient.getAllBookingsWithPagination("", userId, from, size);
 		}
-		return bookingClient.getAllBookings(userId, state, from, size);
 	}
 
 	@GetMapping(path = "/owner")
@@ -58,10 +60,18 @@ public class BookingController {
 															@RequestParam(required = false) String state,
 															@RequestParam(required = false) String from,
 															@RequestParam(required = false) String size) {
-		if (from == null || size == null) {
+		if ((from == null || size == null) && state == null) {
+			return bookingClient.getAllBookingsWithoutParametersAndPagination("/owner", userId);
+		} else if ((from == null || size == null) && state != null) {
+			return bookingClient.getAllBookingsWithoutPagination("/owner", userId, state);
+		} else {
+			return bookingClient.getAllBookingsWithPagination("/owner", userId, from, size);
+		}
+
+		/*if (from == null || size == null) {
 			from = "";
 			size = "";
-		}
-		return bookingClient.getAllBookingsOwner(userId, state, from, size);
+		}*/
+		//return bookingClient.getAllBookingsOwner(userId, state, from, size);
 	}
 }

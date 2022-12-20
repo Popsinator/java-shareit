@@ -26,23 +26,33 @@ public class BookingClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> getAllBookings(int userId, String state, String from, String size) {
+    public ResponseEntity<Object> getAllBookingsWithoutParametersAndPagination(String path, int userId) {
+        return get(path, userId, null);
+    }
+
+    public ResponseEntity<Object> getAllBookingsWithoutPagination(String path, int userId, String state) {
         Map<String, Object> parameters = Map.of(
-                "state", state,
+                "state", state
+        );
+        return get(path + "?state={state}", userId, parameters);
+    }
+
+    public ResponseEntity<Object> getAllBookingsWithPagination(String path, int userId, String from, String size) {
+        Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size
         );
-        return get("?state={state}&from={from}&size={size}", userId, parameters);
+        return get(path + "?from={from}&size={size}", userId, parameters);
     }
 
-    public ResponseEntity<Object> getAllBookingsOwner(int userId, String state, String from, String size) {
+    /*public ResponseEntity<Object> getAllBookingsOwner(int userId, String state, String from, String size) {
         Map<String, Object> parameters = Map.of(
                 "state", state,
                 "from", from,
                 "size", size
         );
         return get("/owner" + "?state={state}&from={from}&size={size}", userId, parameters);
-    }
+    }*/
 
 
     public ResponseEntity<Object> createBooking(int userId, BookingDtoIn booking) {

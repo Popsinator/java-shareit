@@ -91,8 +91,8 @@ public class BaseClient {
         delete(userId);
     }*/
 
-    protected void delete(int userId) {
-        makeAndSendRequest(HttpMethod.DELETE, "/", userId, null, null);
+    protected void delete(String path) {
+        makeAndSendRequest(HttpMethod.DELETE, path, null, null, null);
     }
 
     private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Integer userId, @Nullable Map<String, Object> parameters, @Nullable T body) {

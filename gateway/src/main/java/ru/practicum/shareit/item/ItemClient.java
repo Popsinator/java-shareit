@@ -53,7 +53,7 @@ public class ItemClient extends BaseClient {
         return get("/search/" + "?text={text}", parameters);
     }
 
-    public void deleteItem(int userId) {
-        delete(userId);
+    public void deleteItem(int itemId) {
+        delete("/" + itemId);
     }
 }
