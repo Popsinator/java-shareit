@@ -27,15 +27,15 @@ public class RequestClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> createItemRequest(ItemRequestDto request, int userId) {
-        return post("", userId, request);
+    public ResponseEntity<Object> createItemRequest(ItemRequestDto request, Integer userId) {
+        return post(userId, request);
     }
 
-    public ResponseEntity<Object> getRequests(int userId) {
+    public ResponseEntity<Object> getRequests(Integer userId) {
         return get("", userId);
     }
 
-    public ResponseEntity<Object> getRequestWithPagination(int userId, Integer from, Integer size) {
+    public ResponseEntity<Object> getRequestWithPagination(Integer userId, Integer from, Integer size) {
         Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size
@@ -43,7 +43,7 @@ public class RequestClient extends BaseClient {
         return get("/all?state={state}&from={from}&size={size}", userId, parameters);
     }
 
-    public ResponseEntity<Object> getRequestListOnRequesterId(int requesterId, int userId) {
+    public ResponseEntity<Object> getRequestListOnRequesterId(int requesterId, Integer userId) {
         return get("/" + requesterId, userId);
     }
 }

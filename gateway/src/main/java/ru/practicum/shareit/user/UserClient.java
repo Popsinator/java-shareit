@@ -25,11 +25,11 @@ public class UserClient extends BaseClient {
     }
 
     public ResponseEntity<Object> createUser(User user) {
-        return post("", user);
+        return post(user);
     }
 
     public ResponseEntity<Object> updateUser(User user, int userId) {
-        return post("/" + userId, user);
+        return patch("/" + userId, user);
     }
 
     public ResponseEntity<Object> getUser(int userId) {
@@ -41,6 +41,6 @@ public class UserClient extends BaseClient {
     }
 
     public void deleteUser(int userId) {
-        delete("/" + userId);
+        delete(userId);
     }
 }

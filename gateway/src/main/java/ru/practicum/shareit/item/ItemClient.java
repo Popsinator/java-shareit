@@ -27,7 +27,7 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> createItem(Item item, int userId) {
-        return post("", userId, item);
+        return post(userId, item);
     }
 
     public ResponseEntity<Object> createComment(Comment comment, int userId, int itemId) {
@@ -35,7 +35,7 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> updateItem(Item item, int itemId, int userId) {
-        return post("/" + itemId, userId, item);
+        return patch("/" + itemId, userId, item);
     }
 
     public ResponseEntity<Object> getItem(int itemId, int userId) {
@@ -54,6 +54,6 @@ public class ItemClient extends BaseClient {
     }
 
     public void deleteItem(int userId) {
-        delete("/" + userId);
+        delete(userId);
     }
 }
