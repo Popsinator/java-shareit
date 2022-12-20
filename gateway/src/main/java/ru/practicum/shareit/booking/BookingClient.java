@@ -45,16 +45,6 @@ public class BookingClient extends BaseClient {
         return get(path + "?from={from}&size={size}", userId, parameters);
     }
 
-    /*public ResponseEntity<Object> getAllBookingsOwner(int userId, String state, String from, String size) {
-        Map<String, Object> parameters = Map.of(
-                "state", state,
-                "from", from,
-                "size", size
-        );
-        return get("/owner" + "?state={state}&from={from}&size={size}", userId, parameters);
-    }*/
-
-
     public ResponseEntity<Object> createBooking(int userId, BookingDtoIn booking) {
         return post(userId, booking);
     }
@@ -65,10 +55,6 @@ public class BookingClient extends BaseClient {
         );
         return patch("/" + bookingId + "?approved={approved}", userId, parameters);
     }
-
-    /*public ResponseEntity<Object> getBooking(int userId, Long bookingId) {
-        return get("/" + bookingId, userId);
-    }*/
 
     public ResponseEntity<Object> getBookingDto(int bookingId, int userId) {
         return get("/" + bookingId, userId);

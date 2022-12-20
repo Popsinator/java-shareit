@@ -43,29 +43,9 @@ public class BaseClient {
         return post("", userId, body);
     }
 
-    /*protected <T> ResponseEntity<Object> post(String path, int userId, Map<String, Object> parameters) {
-        return post(path, userId, parameters, null);
-    }*/
-
     protected <T> ResponseEntity<Object> post(String path, @Nullable Integer userId, T body) {
         return makeAndSendRequest(HttpMethod.POST, path, userId, null, body);
     }
-
-    /*protected <T> ResponseEntity<Object> put(String path, T body) {
-        return put(path, null, null, body);
-    }
-
-    protected <T> ResponseEntity<Object> put(String path, Integer userId, T body) {
-        return put(path, userId, null, body);
-    }
-
-    protected <T> ResponseEntity<Object> put(String path, Integer userId, Map<String, Object> parameters) {
-        return put(path, userId, parameters, null);
-    }
-
-    protected <T> ResponseEntity<Object> put(String path, Integer userId, @Nullable Map<String, Object> parameters, T body) {
-        return makeAndSendRequest(HttpMethod.PUT, path, userId, parameters, body);
-    }*/
 
     protected <T> ResponseEntity<Object> patch(String path, T body) {
         return patch(path, null, null, body);
@@ -82,14 +62,6 @@ public class BaseClient {
     protected <T> ResponseEntity<Object> patch(String path, Integer userId, @Nullable Map<String, Object> parameters, T body) {
         return makeAndSendRequest(HttpMethod.PATCH, path, userId, parameters, body);
     }
-
-    /*protected void delete(String path) {
-        delete(path, null, null);
-    }*/
-
-    /*protected void delete(int userId) {
-        delete(userId);
-    }*/
 
     protected void delete(String path) {
         makeAndSendRequest(HttpMethod.DELETE, path, null, null, null);
