@@ -6,30 +6,36 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Marker;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+
+import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
-@Validated
 public class ItemController {
     private final ItemClient itemClient;
 
     @PostMapping()
-    public ResponseEntity<Object> create(@RequestHeader("X-Sharer-User-Id") int userId, @RequestBody Item item) {
+    @Validated({Marker.OnCreate.class})
+    public ResponseEntity<Object> create(@RequestHeader("X-Sharer-User-Id") int userId, @Valid @RequestBody ItemDto item) {
         return itemClient.createItem(item, userId);
     }
 
     @PostMapping(path = "/{itemId}/comment")
+    @Validated({Marker.OnCreate.class})
     public ResponseEntity<Object> addComments(@RequestHeader("X-Sharer-User-Id") int userId,
-                                  @RequestBody Comment comment,
+                                  @Valid @RequestBody CommentDto comment,
                                   @PathVariable String itemId) {
         return itemClient.createComment(comment, userId, Integer.parseInt(itemId));
     }
 
     @PatchMapping(path = "/{itemId}")
     public ResponseEntity<Object> update(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                       @RequestBody Item item, @PathVariable String itemId) {
+                       @RequestBody ItemDto item, @PathVariable String itemId) {
         return itemClient.updateItem(item, Integer.parseInt(itemId), userId);
     }
 

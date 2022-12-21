@@ -14,6 +14,7 @@ import ru.practicum.shareit.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -43,7 +44,8 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         booking.setStatus(Status.WAITING);
-        Booking test = BookingMapper.toBookingDtoIn(booking, userRepository.findUserByIdEquals(userId), itemRepository.findItemByIdEquals(booking.getItemId()));
+        Booking test = BookingMapper.toBookingDtoIn(booking, userRepository.findUserByIdEquals(userId).get(),
+                itemRepository.findItemByIdEquals(booking.getItemId()));
         return bookingRepository.save(test);
     }
 
@@ -51,9 +53,10 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto changeStatusOnApprovedOrRejected(int bookingId, int userId, String approved) {
         Booking existBooking = getBooking(bookingId, userId);
-        if (approved == null) {
+        /*if (approved == null) {
             throw new BadRequestException("Отсутствует статус в заголовке");
-        } else if (existBooking.getItem().getOwner().getId() != userId) {
+        } else*/
+        if (existBooking.getItem().getOwner().getId() != userId) {
             throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         } else if (existBooking.getStatus().equals(Status.APPROVED)) {
             throw new BadRequestException("Бронирование уже на статусе APPROVED");
@@ -62,7 +65,8 @@ public class BookingServiceImpl implements BookingService {
         } else if (approved.equals("false")) {
             existBooking.setStatus(Status.REJECTED);
         }
-        return BookingMapper.toBookingDto(bookingRepository.save(existBooking), existBooking.getBooker(), existBooking.getItem());
+        return BookingMapper.toBookingDto(bookingRepository.save(existBooking),
+                existBooking.getBooker(), existBooking.getItem());
     }
 
     @Override
@@ -80,7 +84,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingDto> getAllBookings(int userId, String state, String from, String size) {
+    public List<BookingDto> getAllBookings(int userId, String state, String from, String size) {
         LocalDateTime real = LocalDateTime.now();
         checkUserId(userId);
         State stateAfterCheck = checkStatus(state);
@@ -88,11 +92,13 @@ public class BookingServiceImpl implements BookingService {
         Collection<Booking> temp;
         if (Objects.equals(from, "") || Objects.equals(size, "")) {
             temp = new ArrayList<>(bookingRepository.findAllByBooker_Id(userId));
-        } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
+        } /*else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0)
+                || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
             throw new BadRequestException("Некорректные параметры пагинации.");
-        } else {
+        }*/ else {
             int start = Integer.parseInt(from) / Integer.parseInt(size);
-            temp = bookingRepository.findAllByBooker_Id(userId, PageRequest.of(start, Integer.parseInt(size), Sort.by(Sort.Direction.DESC, "start")))
+            temp = bookingRepository.findAllByBooker_Id(userId, PageRequest.of(start, Integer.parseInt(size),
+                            Sort.by(Sort.Direction.DESC, "start")))
                     .stream()
                     .collect(Collectors.toList());
         }
@@ -102,19 +108,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingDto> getAllBookingsOwner(int userId, String state, String from, String size) {
+    public List<BookingDto> getAllBookingsOwner(int userId, String state, String from, String size) {
         LocalDateTime real = LocalDateTime.now();
         checkUserId(userId);
         State stateAfterCheck = checkStatus(state);
-        Collection<BookingDto> bookingDtos = new ArrayList<>();
-        Collection<Booking> bookingsFull;
+        List<BookingDto> bookingDtos = new ArrayList<>();
+        List<Booking> bookingsFull;
         if (Objects.equals(from, "") || Objects.equals(size, "")) {
             bookingsFull = bookingRepository.findAll();
-        } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
+        } /*else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0)
+                || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
             throw new BadRequestException("Некорректные параметры пагинации.");
-        } else {
+        }*/ else {
             int start = Integer.parseInt(from) / Integer.parseInt(size);
-            bookingsFull = bookingRepository.findAllByItemOwner_Id(userId, PageRequest.of(start, Integer.parseInt(size), Sort.by(Sort.Direction.DESC, "start")))
+            bookingsFull = bookingRepository.findAllByItemOwner_Id(userId, PageRequest.of(start, Integer.parseInt(size),
+                            Sort.by(Sort.Direction.DESC, "start")))
                     .stream()
                     .collect(Collectors.toList());
             fillBookingDto(real, stateAfterCheck, bookingDtos, bookingsFull);
@@ -167,7 +175,8 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    public void fillBookingDto(LocalDateTime real, State stateAfterCheck, Collection<BookingDto> bookingDtos, Collection<Booking> temp) {
+    public void fillBookingDto(LocalDateTime real, State stateAfterCheck, Collection<BookingDto> bookingDtos,
+                               Collection<Booking> temp) {
         if (stateAfterCheck.equals(State.WAITING)) {
             for (Booking booking : temp) {
                 if (booking.getStatus().equals(Status.WAITING)) {

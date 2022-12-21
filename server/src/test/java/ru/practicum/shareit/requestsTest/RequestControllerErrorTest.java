@@ -54,8 +54,8 @@ public class RequestControllerErrorTest {
 
     @Test
     void createNewItemRequestWithEmptyDescriptionTest() throws Exception {
-        when(itemRequestService.createItemRequest(any(), anyInt()))
-                .thenThrow(BadRequestException.class);
+        /*when(itemRequestService.createItemRequest(any(), anyInt()))
+                .thenThrow(BadRequestException.class);*/
 
         mvc.perform(post("/requests")
                         .header("X-Sharer-User-Id", 1)
@@ -68,8 +68,8 @@ public class RequestControllerErrorTest {
 
     @Test
     void getItemRequestsWithIncorrectParamPaginationTest() throws Exception {
-        when(itemRequestService.getRequestWithPagination(anyInt(), anyInt(), anyInt()))
-                .thenThrow(BadRequestException.class);
+        /*when(itemRequestService.getRequestWithPagination(anyInt(), anyInt(), anyInt()))
+                .thenThrow(BadRequestException.class);*/
 
         mvc.perform(get("/requests/all")
                         .header("X-Sharer-User-Id", 1)

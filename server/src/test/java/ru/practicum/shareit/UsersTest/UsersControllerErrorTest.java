@@ -50,8 +50,8 @@ public class UsersControllerErrorTest {
 
     @Test
     void saveNewUserTest() throws Exception {
-        when(userService.createUser(any()))
-                .thenThrow(BadRequestException.class);
+        /*when(userService.createUser(any()))
+                .thenThrow(BadRequestException.class);*/
 
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(user))

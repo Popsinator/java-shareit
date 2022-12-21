@@ -33,7 +33,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public Item createItem(Item item, int userId) {
-        item.setOwner(userRepository.findUserByIdEquals(userId));
+        item.setOwner(userRepository.findUserByIdEquals(userId).get());
         checkItem(item);
         return itemRepository.save(item);
     }
@@ -41,9 +41,10 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public Item updateItem(Item item, int itemId, Integer userId) {
-        if (userId == null) {
+        /*if (userId == null) {
             throw new InternalServerErrorException("Отсутствует заголовок 'X-Sharer-User-Id'");
-        } else if (!Objects.equals(itemRepository.findItemByIdEquals(itemId).getOwner().getId(), userId)) {
+        } else*/
+        if (!Objects.equals(itemRepository.findItemByIdEquals(itemId).getOwner().getId(), userId)) {
             throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         Item itemInStorage = getItem(itemId, userId);
@@ -90,7 +91,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<Item> getAllItems(Integer userId) {
+    public List<Item> getAllItems(Integer userId) {
         lastBooking = null;
         nextBooking = null;
         LocalDateTime real = LocalDateTime.now();
@@ -129,9 +130,9 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public CommentDto createComment(Comment comment, int userId, int itemId) {
-        if (comment.getText().isEmpty()) {
+        /*if (comment.getText().isEmpty()) {
             throw new BadRequestException("Пустой комментарий");
-        }
+        }*/
         boolean flag = true;
         List<Booking> test = bookingRepository.findAllByItem_IdAndAndBooker_Id(itemId, userId);
         for (Booking booking : test) {
@@ -141,17 +142,22 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         if (flag) {
-            throw new BadRequestException(String.format("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
+            throw new BadRequestException
+                    (String.format("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
         }
-        comment.setAuthor(userRepository.findUserByIdEquals(userId));
+        comment.setAuthor(userRepository.findUserByIdEquals(userId).get());
         comment.setItem(itemRepository.findItemByIdEquals(itemId));
         return ItemMapper.toDtoComment(commentsRepository.save(comment), comment.getAuthor().getName(), "");
     }
 
     public void checkItem(Item item) {
-        if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner().getId() == 0) {
-            throw new BadRequestException("Отсутствует имя, описание, статус или владелец");
-        } else if (!userRepository.existsById(item.getOwner().getId())) {
+        if (//Objects.equals(item.getName(), "")
+                //|| item.getDescription() == null
+                //|| item.getAvailable() == null
+                /*||*/ item.getOwner().getId() == 0) {
+            throw new BadRequestException("Отсутствует владелец");
+        } else
+        if (!userRepository.existsById(item.getOwner().getId())) {
             throw new NotFoundException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }

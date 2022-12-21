@@ -28,10 +28,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public ItemRequest createItemRequest(ItemRequestDto requestDto, int userId) {
         checkUserId(userId);
-        if (requestDto.getDescription() == null) {
+        /*if (requestDto.getDescription() == null) {
             throw new BadRequestException("Запрос не содержит описания.");
-        }
-        ItemRequest temp = RequestMapper.toItemRequestDto(requestDto, userRepository.findUserByIdEquals(userId));
+        }*/
+        ItemRequest temp = RequestMapper.toItemRequestDto(requestDto, userRepository.findUserByIdEquals(userId).get());
         temp.setCreated(LocalDateTime.now());
         return requestReporistory.save(temp);
     }
@@ -47,11 +47,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequest> getRequestWithPagination(int userId, int from, int size) {
         checkUserId(userId);
-        if ((from == 0 && size == 0) || from < 0 || size < 0) {
+        /*if ((from == 0 && size == 0) || from < 0 || size < 0) {
             throw new BadRequestException("Некорректные параметры пагинации.");
-        }
+        }*/
         int start = from / size;
-        List<ItemRequest> requestList = requestReporistory.findAllByRequester_IdNot(userId, PageRequest.of(start, size, Sort.by("created"))).stream().collect(Collectors.toList());
+        List<ItemRequest> requestList = requestReporistory.findAllByRequester_IdNot(userId, PageRequest.of(start, size,
+                Sort.by("created")))
+                .stream()
+                .collect(Collectors.toList());
         setItemListInRequestsList(requestList);
         return requestList;
     }

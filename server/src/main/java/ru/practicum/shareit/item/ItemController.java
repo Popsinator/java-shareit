@@ -2,9 +2,12 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.InternalServerErrorException;
 import ru.practicum.shareit.item.dto.CommentDto;
 
 import java.util.Collection;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/items")
@@ -14,6 +17,12 @@ public class ItemController {
 
     @PostMapping()
     public Item create(@RequestHeader("X-Sharer-User-Id") int userId, @RequestBody Item item) {
+        if (Objects.equals(item.getName(), "")
+                || item.getDescription() == null
+                || item.getAvailable() == null
+                /*|| item.getOwner().getId() == 0*/) {
+            throw new BadRequestException("Отсутствует имя, описание, статус или владелец");
+        }
         return itemService.createItem(item, userId);
     }
 
@@ -21,12 +30,18 @@ public class ItemController {
     public CommentDto addComments(@RequestHeader("X-Sharer-User-Id") int userId,
                                   @RequestBody Comment comment,
                                   @PathVariable String itemId) {
+        if (comment.getText().isEmpty()) {
+            throw new BadRequestException("Пустой комментарий");
+        }
         return itemService.createComment(comment, userId, Integer.parseInt(itemId));
     }
 
     @PatchMapping(path = "/{itemId}")
     public Item update(@RequestHeader("X-Sharer-User-Id") Integer userId,
                        @RequestBody Item item, @PathVariable String itemId) {
+        if (userId == null) {
+            throw new InternalServerErrorException("Отсутствует заголовок 'X-Sharer-User-Id'");
+        }
         return itemService.updateItem(item, Integer.parseInt(itemId), userId);
     }
 

@@ -2,7 +2,12 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Marker;
+import ru.practicum.shareit.user.dto.UserDto;
+
+import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -12,12 +17,13 @@ public class UserController {
     private final UserClient userClient;
 
     @PostMapping()
-    public ResponseEntity<Object> createNewUser(@RequestBody User user) {
+    @Validated({Marker.OnCreate.class})
+    public ResponseEntity<Object> createNewUser(@Valid @RequestBody UserDto user) {
         return userClient.createUser(user);
     }
 
     @PatchMapping(path = "/{userId}")
-    public ResponseEntity<Object> updateUser(@RequestBody User user, @PathVariable String userId) {
+    public ResponseEntity<Object> updateUser(@RequestBody UserDto user, @PathVariable String userId) {
         user.setId(Integer.parseInt(userId));
         return userClient.updateUser(user, Integer.parseInt(userId));
     }

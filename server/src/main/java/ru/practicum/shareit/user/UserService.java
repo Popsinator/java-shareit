@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
     User createUser(User user);
@@ -11,5 +12,5 @@ public interface UserService {
 
     void deleteUser(int userId);
 
-    Collection<User> findAllUsers();
+    List<User> findAllUsers();
 }

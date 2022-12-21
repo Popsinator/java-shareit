@@ -6,7 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,43 +19,46 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User createUser(User user) {
-        checkUser(user);
+        //checkUser(user);
         return repository.save(user);
     }
 
     @Transactional
     @Override
     public User updateUser(User user, int userId) {
-        User userUpdate = repository.findUserByIdEquals(userId);
+        Optional<User> userUpdate = repository.findUserByIdEquals(userId);
         if (user.getName() == null) {
-            userUpdate.setEmail(user.getEmail());
+            userUpdate.get().setEmail(user.getEmail());
         } else if (user.getEmail() == null) {
-            userUpdate.setName(user.getName());
+            userUpdate.get().setName(user.getName());
         } else {
-            userUpdate.setName(user.getName());
-            userUpdate.setEmail(user.getEmail());
+            userUpdate.get().setName(user.getName());
+            userUpdate.get().setEmail(user.getEmail());
         }
-        return repository.save(userUpdate);
+        return repository.save(userUpdate.get());
     }
 
     @Override
     public User getUser(int userId) {
-        if (!repository.existsById(userId)) {
+        return repository.findUserByIdEquals(userId)
+                .orElseThrow(() -> new NotFoundException(String.format(
+                        "Пользователь с данным id %s не зарегистрирован.", userId)));
+        /*if (!repository.existsById(userId)) {
             throw new NotFoundException(String.format(
                     "Пользователь с данным id %s не зарегистрирован.", userId));
         }
-        return repository.findUserByIdEquals(userId);
+        return repository.findUserByIdEquals(userId);*/
     }
 
     @Transactional
     @Override
     public void deleteUser(int userId) {
-        User userDelete = repository.findUserByIdEquals(userId);
+        User userDelete = repository.findUserByIdEquals(userId).get();
         repository.removeUserByIdEquals(userDelete.getId());
     }
 
     @Override
-    public Collection<User> findAllUsers() {
+    public List<User> findAllUsers() {
         return repository.findAll();
     }
 

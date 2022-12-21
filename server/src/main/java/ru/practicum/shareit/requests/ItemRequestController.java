@@ -2,6 +2,7 @@ package ru.practicum.shareit.requests;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
 
 import java.util.List;
@@ -15,6 +16,9 @@ public class ItemRequestController {
 
     @PostMapping()
     public ItemRequest create(@RequestHeader("X-Sharer-User-Id") int userId, @RequestBody ItemRequestDto request) {
+        if (request.getDescription() == null) {
+            throw new BadRequestException("Запрос не содержит описания.");
+        }
         return requestService.createItemRequest(request, userId);
     }
 
@@ -30,6 +34,11 @@ public class ItemRequestController {
         if (from == null || size == null) {
             return requestService.getRequests(userId);
         } else {
+            if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0)
+                    || Integer.parseInt(from) < 0
+                    || Integer.parseInt(size) < 0) {
+                throw new BadRequestException("Некорректные параметры пагинации.");
+            }
             return requestService.getRequestWithPagination(userId, Integer.parseInt(from), Integer.parseInt(size));
         }
     }

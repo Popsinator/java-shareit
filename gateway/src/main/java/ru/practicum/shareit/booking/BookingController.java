@@ -7,7 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.booking.dto.BookingDtoIn;
+import ru.practicum.shareit.Marker;
+import ru.practicum.shareit.booking.dto.BookingDto;
+
+import javax.validation.Valid;
 
 @Controller
 @RequestMapping(path = "/bookings")
@@ -18,7 +21,8 @@ public class BookingController {
 	private final BookingClient bookingClient;
 
 	@PostMapping()
-	public ResponseEntity<Object> create(@RequestHeader("X-Sharer-User-Id") int userId, @RequestBody BookingDtoIn booking) {
+	@Validated({Marker.OnCreate.class})
+	public ResponseEntity<Object> create(@RequestHeader("X-Sharer-User-Id") int userId, @Valid @RequestBody BookingDto booking) {
 		return bookingClient.createBooking(userId, booking);
 	}
 

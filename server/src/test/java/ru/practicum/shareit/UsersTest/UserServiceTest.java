@@ -16,9 +16,9 @@ import ru.practicum.shareit.user.UserServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 
 @RequiredArgsConstructor
 @ExtendWith(MockitoExtension.class)
@@ -73,7 +73,7 @@ public class UserServiceTest {
         Mockito.when(userRepository.save(user))
                 .thenReturn(user);
         Mockito.when(userRepository.findUserByIdEquals(user.getId()))
-                .thenReturn(user);
+                .thenReturn(Optional.of(user));
         Assertions.assertEquals(user.getId(), userService.updateUser(user, user.getId()).getId());
         Assertions.assertEquals(user.getName(), userService.updateUser(user, user.getId()).getName());
         Assertions.assertEquals(user.getEmail(), userService.updateUser(user, user.getId()).getEmail());
@@ -84,7 +84,7 @@ public class UserServiceTest {
         Mockito.when(userRepository.save(user))
                 .thenReturn(user);
         Mockito.when(userRepository.findUserByIdEquals(user.getId()))
-                .thenReturn(user);
+                .thenReturn(Optional.of(user));
         Assertions.assertEquals(user.getId(), userService.updateUser(userWithoutName, userWithoutName.getId()).getId());
         Assertions.assertEquals(user.getName(), userService.updateUser(userWithoutName, userWithoutName.getId()).getName());
         Assertions.assertEquals(user.getEmail(), userService.updateUser(userWithoutName, userWithoutName.getId()).getEmail());
@@ -95,7 +95,7 @@ public class UserServiceTest {
         Mockito.when(userRepository.save(user))
                 .thenReturn(user);
         Mockito.when(userRepository.findUserByIdEquals(user.getId()))
-                .thenReturn(user);
+                .thenReturn(Optional.of(user));
         Assertions.assertEquals(user.getId(), userService.updateUser(userWithoutEmail, userWithoutEmail.getId()).getId());
         Assertions.assertEquals(user.getName(), userService.updateUser(userWithoutEmail, userWithoutEmail.getId()).getName());
         Assertions.assertEquals(user.getEmail(), userService.updateUser(userWithoutEmail, userWithoutEmail.getId()).getEmail());
@@ -104,17 +104,12 @@ public class UserServiceTest {
     @Test
     void getUserTest() {
         Mockito.when(userRepository.findUserByIdEquals(user.getId()))
-                .thenReturn(user);
-        Mockito.when(userRepository.existsById(anyInt()))
-                .thenReturn(true);
+                .thenReturn(Optional.of(user));
         Assertions.assertEquals(user, userService.getUser(user.getId()));
     }
 
     @Test
     void getUserWithErrorTest() {
-        Mockito.when(userRepository.existsById(anyInt()))
-                .thenReturn(false);
-
         final NotFoundException exception = Assertions.assertThrows(
                 NotFoundException.class,
                 () -> userService.getUser(userErrorId.getId()));
@@ -126,7 +121,7 @@ public class UserServiceTest {
     @Test
     void deleteUserTest() {
         Mockito.when(userRepository.findUserByIdEquals(user.getId()))
-                .thenReturn(user);
+                .thenReturn(Optional.of(user));
         userService.deleteUser(user.getId());
         Mockito.verify(userRepository, Mockito.times(1))
                 .removeUserByIdEquals(user.getId());
