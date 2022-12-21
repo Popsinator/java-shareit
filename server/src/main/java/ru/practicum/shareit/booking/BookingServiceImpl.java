@@ -113,10 +113,7 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookingsFull;
         if (Objects.equals(from, "") || Objects.equals(size, "")) {
             bookingsFull = bookingRepository.findAll();
-        } /*else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0)
-                || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
-            throw new BadRequestException("Некорректные параметры пагинации.");
-        }*/ else {
+        } else {
             int start = Integer.parseInt(from) / Integer.parseInt(size);
             bookingsFull = bookingRepository.findAllByItemOwner_Id(userId, PageRequest.of(start, Integer.parseInt(size),
                             Sort.by(Sort.Direction.DESC, "start")))
