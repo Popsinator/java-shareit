@@ -20,7 +20,6 @@ import ru.practicum.shareit.user.User;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

@@ -142,8 +142,7 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         if (flag) {
-            throw new BadRequestException
-                    (String.format("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
+            throw new BadRequestException(String.format("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
         }
         comment.setAuthor(userRepository.findUserByIdEquals(userId).get());
         comment.setItem(itemRepository.findItemByIdEquals(itemId));
@@ -152,12 +151,11 @@ public class ItemServiceImpl implements ItemService {
 
     public void checkItem(Item item) {
         if (//Objects.equals(item.getName(), "")
-                //|| item.getDescription() == null
-                //|| item.getAvailable() == null
-                /*||*/ item.getOwner().getId() == 0) {
+            //|| item.getDescription() == null
+            //|| item.getAvailable() == null
+            /*||*/ item.getOwner().getId() == 0) {
             throw new BadRequestException("Отсутствует владелец");
-        } else
-        if (!userRepository.existsById(item.getOwner().getId())) {
+        } else if (!userRepository.existsById(item.getOwner().getId())) {
             throw new NotFoundException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }

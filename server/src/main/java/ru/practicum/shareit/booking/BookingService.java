@@ -3,7 +3,6 @@ package ru.practicum.shareit.booking;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface BookingService {
