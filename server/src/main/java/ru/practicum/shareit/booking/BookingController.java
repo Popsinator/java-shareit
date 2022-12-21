@@ -55,7 +55,6 @@ public class BookingController {
                                                             @RequestParam(required = false) String state,
                                                             @RequestParam(required = false) String from,
                                                             @RequestParam(required = false) String size) {
-        //checkPagination(from, size);
         if (from == null || size == null) {
             from = "";
             size = "";

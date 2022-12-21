@@ -52,9 +52,6 @@ public class ItemControllerErrorTest {
 
     @Test
     void saveNewItemWithEmptyItemNameTest() throws Exception {
-        /*when(itemService.createItem(any(), anyInt()))
-                .thenThrow(BadRequestException.class);*/
-
         mvc.perform(post("/items")
                         .header("X-Sharer-User-Id", 1)
                         .content(mapper.writeValueAsString(item))
@@ -94,9 +91,6 @@ public class ItemControllerErrorTest {
 
     @Test
     void saveNewCommentWithEmptyTextTest() throws Exception {
-        /*when(itemService.createComment(any(), eq(1), eq(1)))
-                .thenThrow(BadRequestException.class);*/
-
         mvc.perform(post("/items/" + 1 + "/comment")
                         .header("X-Sharer-User-Id", 1)
                         .content(mapper.writeValueAsString(commentDto))
@@ -108,9 +102,6 @@ public class ItemControllerErrorTest {
 
     @Test
     void saveNewCommentWithEmptyBookingUserTest() throws Exception {
-        /*when(itemService.createComment(any(), eq(1), eq(1)))
-                .thenThrow(BadRequestException.class);*/
-
         mvc.perform(post("/items/" + 1 + "/comment")
                         .header("X-Sharer-User-Id", 1)
                         .content(mapper.writeValueAsString(commentDto))

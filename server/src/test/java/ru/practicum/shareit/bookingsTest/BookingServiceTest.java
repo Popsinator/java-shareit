@@ -190,19 +190,6 @@ public class BookingServiceTest {
         Assertions.assertEquals(Status.REJECTED, bookingService.changeStatusOnApprovedOrRejected(booking.getId(), user.getId(), "false").getStatus());
     }
 
-    /*@Test
-    void changeStatusOnApprovedOrRejectedWithNullStatusTest() {
-        Mockito.when(bookingRepository.findBookingByIdEquals(anyInt()))
-                .thenReturn(bookingStatusWaiting);
-
-        final BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> bookingService.changeStatusOnApprovedOrRejected(booking.getId(), user.getId(), null));
-
-        Assertions.assertEquals("Отсутствует статус в заголовке", exception.getMessage());
-
-    }*/
-
     @Test
     void changeStatusOnApprovedOrRejectedWithIncorrectUserHeaderIdTest() {
         Mockito.when(bookingRepository.findBookingByIdEquals(anyInt()))
@@ -264,19 +251,6 @@ public class BookingServiceTest {
         Assertions.assertEquals(listBookings.get(0).getStatus(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", "", "")).get(0).getStatus());
         Assertions.assertEquals(listBookings.get(0).getBooker(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", "", "")).get(0).getBooker());
     }
-
-    /*@Test
-    void getAllBookingWithInvalidParamPaginationTest() {
-        Mockito.when(userRepository.existsById(anyInt()))
-                .thenReturn(true);
-
-        final BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> bookingService.getAllBookings(user.getId(), "ALL", "0", "0"));
-
-        Assertions.assertEquals("Некорректные параметры пагинации.", exception.getMessage());
-    }*/
-
     @Test
     void getAllBookingForOwnerCompleteTest() {
         Mockito.when(bookingRepository.findAllByItemOwner_Id(anyInt(), any()))
@@ -302,18 +276,6 @@ public class BookingServiceTest {
         Assertions.assertEquals(listBookings.get(0).getStatus(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", "", "")).get(0).getStatus());
         Assertions.assertEquals(listBookings.get(0).getBooker(), new ArrayList<>(bookingService.getAllBookingsOwner(user.getId(), "ALL", "", "")).get(0).getBooker());
     }
-
-    /*@Test
-    void getAllBookingForOwnerWithInvalidParamPaginationTest() {
-        Mockito.when(userRepository.existsById(anyInt()))
-                .thenReturn(true);
-
-        final BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> bookingService.getAllBookingsOwner(user.getId(), "ALL", "0", "0"));
-
-        Assertions.assertEquals("Некорректные параметры пагинации.", exception.getMessage());
-    }*/
 
     @Test
     void checkUserIdExceptionTest() {

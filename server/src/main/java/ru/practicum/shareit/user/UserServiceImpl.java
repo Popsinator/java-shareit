@@ -19,7 +19,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User createUser(User user) {
-        //checkUser(user);
         return repository.save(user);
     }
 
@@ -43,11 +42,6 @@ public class UserServiceImpl implements UserService {
         return repository.findUserByIdEquals(userId)
                 .orElseThrow(() -> new NotFoundException(String.format(
                         "Пользователь с данным id %s не зарегистрирован.", userId)));
-        /*if (!repository.existsById(userId)) {
-            throw new NotFoundException(String.format(
-                    "Пользователь с данным id %s не зарегистрирован.", userId));
-        }
-        return repository.findUserByIdEquals(userId);*/
     }
 
     @Transactional

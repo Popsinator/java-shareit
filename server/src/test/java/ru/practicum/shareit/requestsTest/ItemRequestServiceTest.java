@@ -42,7 +42,6 @@ public class ItemRequestServiceTest {
     private final Item item = new Item("test", "Description test", true, user, 1);
     private final List<Item> listItems = List.of(item);
     private final ItemRequest itemRequest = new ItemRequest(1, "test", user, LocalDateTime.now(), listItems);
-    private final ItemRequestDto itemRequestEmptyDescription = new ItemRequestDto(null, LocalDateTime.now(), null);
     private final ItemRequestDto itemRequestDto = new ItemRequestDto("test", LocalDateTime.now(), null);
     private final List<ItemRequest> listItemRequests = List.of(itemRequest);
     Page<ItemRequest> pageItemRequests = new PageImpl<>(listItemRequests);
@@ -63,18 +62,6 @@ public class ItemRequestServiceTest {
         Assertions.assertEquals(itemRequest.getId(), itemRequestService.createItemRequest(itemRequestDto, user.getId()).getId());
         Assertions.assertEquals(itemRequest.getDescription(), itemRequestService.createItemRequest(itemRequestDto, user.getId()).getDescription());
     }
-
-    /*@Test
-    void createNewItemRequestWithEmptyDescriptionTest() {
-        Mockito.when(userRepository.existsById(anyInt()))
-                .thenReturn(true);
-
-        final BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> itemRequestService.createItemRequest(itemRequestEmptyDescription, user.getId()));
-
-        Assertions.assertEquals("Запрос не содержит описания.", exception.getMessage());
-    }*/
 
     @Test
     void checkUserIdExceptionTest() {
@@ -111,18 +98,6 @@ public class ItemRequestServiceTest {
         Assertions.assertEquals(listItemRequests.size(), itemRequestService.getRequestWithPagination(userErrorId.getId(), 1, 1).size());
         Assertions.assertEquals(listItemRequests.get(0).getId(), itemRequestService.getRequestWithPagination(userErrorId.getId(), 1, 1).get(0).getId());
     }
-
-    /*@Test
-    void getItemRequestsWithExceptionTest() {
-        Mockito.when(userRepository.existsById(anyInt()))
-                .thenReturn(true);
-
-        final BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> itemRequestService.getRequestWithPagination(user.getId(), 0, 0));
-
-        Assertions.assertEquals("Некорректные параметры пагинации.", exception.getMessage());
-    }*/
 
     @Test
     void getItemRequestTest() {

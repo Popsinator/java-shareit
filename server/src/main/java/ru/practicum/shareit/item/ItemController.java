@@ -19,8 +19,7 @@ public class ItemController {
     public Item create(@RequestHeader("X-Sharer-User-Id") int userId, @RequestBody Item item) {
         if (Objects.equals(item.getName(), "")
                 || item.getDescription() == null
-                || item.getAvailable() == null
-                /*|| item.getOwner().getId() == 0*/) {
+                || item.getAvailable() == null) {
             throw new BadRequestException("Отсутствует имя, описание, статус или владелец");
         }
         return itemService.createItem(item, userId);

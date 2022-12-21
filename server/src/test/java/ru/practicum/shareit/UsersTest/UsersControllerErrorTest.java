@@ -22,9 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 public class UsersControllerErrorTest {
 
-    //@Mock
-    //private UserServiceImpl userService;
-
     @InjectMocks
     private UserController controller;
 
@@ -45,9 +42,6 @@ public class UsersControllerErrorTest {
 
     @Test
     void saveNewUserTest() throws Exception {
-        /*when(userService.createUser(any()))
-                .thenThrow(BadRequestException.class);*/
-
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(user))
                         .characterEncoding(StandardCharsets.UTF_8)

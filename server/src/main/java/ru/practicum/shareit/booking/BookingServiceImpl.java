@@ -53,9 +53,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto changeStatusOnApprovedOrRejected(int bookingId, int userId, String approved) {
         Booking existBooking = getBooking(bookingId, userId);
-        /*if (approved == null) {
-            throw new BadRequestException("Отсутствует статус в заголовке");
-        } else*/
         if (existBooking.getItem().getOwner().getId() != userId) {
             throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         } else if (existBooking.getStatus().equals(Status.APPROVED)) {

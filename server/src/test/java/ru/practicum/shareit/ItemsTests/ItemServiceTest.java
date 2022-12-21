@@ -112,16 +112,6 @@ public class ItemServiceTest {
         Assertions.assertEquals(item.getAvailable(), itemService.updateItem(item, item.getId(), item.getOwner().getId()).getAvailable());
         Assertions.assertEquals(item.getOwner(), itemService.updateItem(item, item.getId(), item.getOwner().getId()).getOwner());
     }
-
-    /*@Test
-    void updateItemEmptyHeaderTest() {
-        final InternalServerErrorException exception = Assertions.assertThrows(
-                InternalServerErrorException.class,
-                () -> itemService.updateItem(item, item.getId(), null));
-
-        Assertions.assertEquals("Отсутствует заголовок 'X-Sharer-User-Id'", exception.getMessage());
-    }*/
-
     @Test
     void updateItemIncorrectOwnerTest() {
         Mockito.when(itemRepository.findItemByIdEquals(item.getId()))
@@ -265,15 +255,6 @@ public class ItemServiceTest {
         Assertions.assertEquals(commentDto.getCreated(), itemService.createComment(comment, user.getId(), item.getId()).getCreated());
     }
 
-    /*@Test
-    void createCommentCompleteWithoutTextTest() {
-        final BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> itemService.createComment(commentWithoutText, user.getId(), item.getId()));
-
-        Assertions.assertEquals("Пустой комментарий", exception.getMessage());
-    }*/
-
     @Test
     void createCommentWithoutBookingTest() {
         Mockito.when(bookingRepository.findAllByItem_IdAndAndBooker_Id(anyInt(), anyInt()))
@@ -297,18 +278,6 @@ public class ItemServiceTest {
 
         Assertions.assertEquals("Отсутствует имя, описание, статус или владелец", exception.getMessage());
     }
-
-    /*@Test
-    void checkItemWithoutNameTest() {
-        Mockito.when(userRepository.findUserByIdEquals(user.getId()))
-                .thenReturn(Optional.of(user));
-
-        final BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> itemService.createItem(itemWithoutName, user.getId()));
-
-        Assertions.assertEquals("Отсутствует имя, описание, статус или владелец", exception.getMessage());
-    }*/
 
     @Test
     void checkItemNotExistOwnerTest() {

@@ -41,9 +41,6 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public Item updateItem(Item item, int itemId, Integer userId) {
-        /*if (userId == null) {
-            throw new InternalServerErrorException("Отсутствует заголовок 'X-Sharer-User-Id'");
-        } else*/
         if (!Objects.equals(itemRepository.findItemByIdEquals(itemId).getOwner().getId(), userId)) {
             throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
@@ -130,9 +127,6 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public CommentDto createComment(Comment comment, int userId, int itemId) {
-        /*if (comment.getText().isEmpty()) {
-            throw new BadRequestException("Пустой комментарий");
-        }*/
         boolean flag = true;
         List<Booking> test = bookingRepository.findAllByItem_IdAndAndBooker_Id(itemId, userId);
         for (Booking booking : test) {
@@ -150,10 +144,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public void checkItem(Item item) {
-        if (//Objects.equals(item.getName(), "")
-            //|| item.getDescription() == null
-            //|| item.getAvailable() == null
-            /*||*/ item.getOwner().getId() == 0) {
+        if (item.getOwner().getId() == 0) {
             throw new BadRequestException("Отсутствует владелец");
         } else if (!userRepository.existsById(item.getOwner().getId())) {
             throw new NotFoundException(String.format(
