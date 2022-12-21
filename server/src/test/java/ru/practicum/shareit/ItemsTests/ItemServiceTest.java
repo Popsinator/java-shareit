@@ -112,6 +112,7 @@ public class ItemServiceTest {
         Assertions.assertEquals(item.getAvailable(), itemService.updateItem(item, item.getId(), item.getOwner().getId()).getAvailable());
         Assertions.assertEquals(item.getOwner(), itemService.updateItem(item, item.getId(), item.getOwner().getId()).getOwner());
     }
+
     @Test
     void updateItemIncorrectOwnerTest() {
         Mockito.when(itemRepository.findItemByIdEquals(item.getId()))

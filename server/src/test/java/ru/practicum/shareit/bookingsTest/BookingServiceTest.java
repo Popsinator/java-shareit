@@ -251,6 +251,7 @@ public class BookingServiceTest {
         Assertions.assertEquals(listBookings.get(0).getStatus(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", "", "")).get(0).getStatus());
         Assertions.assertEquals(listBookings.get(0).getBooker(), new ArrayList<>(bookingService.getAllBookings(user.getId(), "ALL", "", "")).get(0).getBooker());
     }
+
     @Test
     void getAllBookingForOwnerCompleteTest() {
         Mockito.when(bookingRepository.findAllByItemOwner_Id(anyInt(), any()))
