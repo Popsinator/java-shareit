@@ -19,11 +19,14 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "text", nullable = false)
+
+    @Column(name = "text", nullable = false, length = 512)
     private String text;
+
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;
+
     @ManyToOne
     @JoinColumn(name = "author_id")
     private User author;

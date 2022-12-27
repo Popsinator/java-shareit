@@ -8,11 +8,13 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findAllByDescriptionContainingIgnoreCase(String text);
 
+    List<Item> findAllByRequestIdEquals(int requestId);
+
     Item findItemByIdEquals(int id);
 
-    List<Item> findAll();
+    List<Item> findAllByOwner_Id(int userId);
 
-    Item save(Item item);
+    boolean existsById(int itemId);
 
     void deleteItemById(int id);
 }

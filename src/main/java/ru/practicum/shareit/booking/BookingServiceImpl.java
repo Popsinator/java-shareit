@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -12,6 +14,7 @@ import ru.practicum.shareit.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,17 +30,17 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking createBooking(int userId, BookingDtoIn booking) {
         LocalDateTime real = LocalDateTime.now();
-        if (itemRepository.findAll().stream().noneMatch(x -> x.getId() == booking.getItemId())) {
-            throw new NotFoundObjectException(String.format("Вещи с идентификатором %s не существует.", booking.getItemId()));
+        if (!itemRepository.existsById(booking.getItemId())) {
+            throw new NotFoundException(String.format("Вещи с идентификатором %s не существует.", booking.getItemId()));
         } else if (!itemRepository.findItemByIdEquals(booking.getItemId()).getAvailable()) {
-            throw new ItemIdStatusUnavailableException(String.format("Вещь с id %s недоступна для бронирования", booking.getItemId()));
-        } else if (userRepository.findAll().stream().noneMatch(x -> x.getId() == userId)) {
-            throw new NotFoundObjectException(String.format("Владельца с идентификатором %s не существует.", userId));
+            throw new BadRequestException(String.format("Вещь с id %s недоступна для бронирования", booking.getItemId()));
+        } else if (!userRepository.existsById(userId)) {
+            throw new NotFoundException(String.format("Владельца с идентификатором %s не существует.", userId));
         } else if ((booking.getEnd().isBefore(booking.getStart())
                 || booking.getStart().isBefore(real) || booking.getEnd().isBefore(real)) && booking.getId() == 0) {
-            throw new DateTimeBookingException("Даты бронирования некорректно заданы");
+            throw new BadRequestException("Даты бронирования некорректно заданы");
         } else if (itemRepository.findItemByIdEquals(booking.getItemId()).getOwner().getId() == userId) {
-            throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
+            throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         booking.setStatus(Status.WAITING);
         Booking test = BookingMapper.toBookingDtoIn(booking, userRepository.findUserByIdEquals(userId), itemRepository.findItemByIdEquals(booking.getItemId()));
@@ -49,11 +52,11 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto changeStatusOnApprovedOrRejected(int bookingId, int userId, String approved) {
         Booking existBooking = getBooking(bookingId, userId);
         if (approved == null) {
-            throw new InvalidStateBookingException("Отсутствует статус в заголовке");
+            throw new BadRequestException("Отсутствует статус в заголовке");
         } else if (existBooking.getItem().getOwner().getId() != userId) {
-            throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
+            throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         } else if (existBooking.getStatus().equals(Status.APPROVED)) {
-            throw new InvalidPatchBookingException("Бронирование уже на статусе APPROVED");
+            throw new BadRequestException("Бронирование уже на статусе APPROVED");
         } else if (approved.equals("true")) {
             existBooking.setStatus(Status.APPROVED);
         } else if (approved.equals("false")) {
@@ -77,109 +80,55 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingDto> getAllBookings(int userId, String state) {
+    public Collection<BookingDto> getAllBookings(int userId, String state, String from, String size) {
         LocalDateTime real = LocalDateTime.now();
         checkUserId(userId);
         State stateAfterCheck = checkStatus(state);
         Collection<BookingDto> bookingDtos = new ArrayList<>();
-        Collection<Booking> temp = bookingRepository.findAll().stream().filter(x -> x.getBooker().getId() == userId).collect(Collectors.toList());
-        if (stateAfterCheck.equals(State.WAITING)) {
-            for (Booking booking : temp) {
-                if (booking.getStatus().equals(Status.WAITING)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-                }
-            }
-        } else if (stateAfterCheck.equals(State.REJECTED)) {
-            for (Booking booking : temp) {
-                if (booking.getStatus().equals(Status.REJECTED)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-                }
-            }
-        } else if (stateAfterCheck.equals(State.ALL)) {
-            for (Booking booking : temp) {
-                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-            }
-        } else if (stateAfterCheck.equals(State.CURRENT)) {
-            for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isBefore(real)
-                        && bookingDtoAdd.getEnd().isAfter(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
-        } else if (stateAfterCheck.equals(State.PAST)) {
-            for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isBefore(real) && bookingDtoAdd.getEnd().isBefore(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
-        } else if (stateAfterCheck.equals(State.FUTURE)) {
-            for (Booking booking : temp) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isAfter(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
+        Collection<Booking> temp;
+        if (Objects.equals(from, "") || Objects.equals(size, "")) {
+            temp = new ArrayList<>(bookingRepository.findAllByBooker_Id(userId));
+        } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
+            throw new BadRequestException("Некорректные параметры пагинации.");
+        } else {
+            int start = Integer.parseInt(from) / Integer.parseInt(size);
+            temp = bookingRepository.findAllByBooker_Id(userId, PageRequest.of(start, Integer.parseInt(size), Sort.by(Sort.Direction.DESC, "start")))
+                    .stream()
+                    .collect(Collectors.toList());
         }
+        fillBookingDto(real, stateAfterCheck, bookingDtos, temp);
         return bookingDtos.stream()
                 .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart())).collect(Collectors.toList());
     }
 
     @Override
-    public Collection<BookingDto> getAllBookingsOwner(int userId, String state) {
+    public Collection<BookingDto> getAllBookingsOwner(int userId, String state, String from, String size) {
         LocalDateTime real = LocalDateTime.now();
         checkUserId(userId);
         State stateAfterCheck = checkStatus(state);
         Collection<BookingDto> bookingDtos = new ArrayList<>();
-        Collection<Booking> bookingsFull = bookingRepository.findAll();
-        if (stateAfterCheck.equals(State.WAITING)) {
-            for (Booking booking : bookingsFull) {
-                if (booking.getStatus().equals(Status.WAITING)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-                }
-            }
-        } else if (stateAfterCheck.equals(State.REJECTED)) {
-            for (Booking booking : bookingsFull) {
-                if (booking.getStatus().equals(Status.REJECTED)) {
-                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-                }
-            }
-        } else if (stateAfterCheck.equals(State.ALL)) {
-            for (Booking booking : bookingsFull) {
-                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
-            }
-        } else if (stateAfterCheck.equals(State.CURRENT)) {
-            for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isBefore(real)
-                        && bookingDtoAdd.getEnd().isAfter(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
-        } else if (stateAfterCheck.equals(State.PAST)) {
-            for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isBefore(real) && bookingDtoAdd.getEnd().isBefore(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
-        } else if (stateAfterCheck.equals(State.FUTURE)) {
-            for (Booking booking : bookingsFull) {
-                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
-                if (bookingDtoAdd.getStart().isAfter(real)) {
-                    bookingDtos.add(bookingDtoAdd);
-                }
-            }
+        Collection<Booking> bookingsFull;
+        if (Objects.equals(from, "") || Objects.equals(size, "")) {
+            bookingsFull = bookingRepository.findAll();
+        } else if ((Integer.parseInt(from) == 0 && Integer.parseInt(size) == 0) || Integer.parseInt(from) < 0 || Integer.parseInt(size) < 0) {
+            throw new BadRequestException("Некорректные параметры пагинации.");
+        } else {
+            int start = Integer.parseInt(from) / Integer.parseInt(size);
+            bookingsFull = bookingRepository.findAllByItemOwner_Id(userId, PageRequest.of(start, Integer.parseInt(size), Sort.by(Sort.Direction.DESC, "start")))
+                    .stream()
+                    .collect(Collectors.toList());
+            fillBookingDto(real, stateAfterCheck, bookingDtos, bookingsFull);
+            return bookingDtos;
         }
+        fillBookingDto(real, stateAfterCheck, bookingDtos, bookingsFull);
         return bookingDtos.stream()
                 .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart())).filter(x -> x.getItem().getOwner().getId() == userId)
                 .collect(Collectors.toList());
     }
 
     public void checkUserId(int userId) {
-        if (userRepository.findAll().stream().noneMatch(x -> x.getId() == userId)) {
-            throw new NotFoundObjectException(String.format(
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException(String.format(
                     "Пользователя с идентификатором %s не существует.", userId));
         }
     }
@@ -187,15 +136,15 @@ public class BookingServiceImpl implements BookingService {
     public void checkUserAndBookerId(int userId, int bookingId) {
         if (bookingRepository.findBookingByIdEquals(bookingId).getBooker().getId() != userId
                 && bookingRepository.findBookingByIdEquals(bookingId).getItem().getOwner().getId() != userId) {
-            throw new InvalidHeaderUserId(String.format(
+            throw new NotFoundException(String.format(
                     "Пользователю с идентификатором %s бронирование с идентификатором "
                             + bookingId + " не принадлежит.", userId));
         }
     }
 
     public void checkBookingId(int bookingId) {
-        if (bookingRepository.findAll().stream().noneMatch(x -> x.getId() == bookingId)) {
-            throw new NotFoundObjectException(String.format(
+        if (!bookingRepository.existsById(bookingId)) {
+            throw new NotFoundException(String.format(
                     "Бронирования с идентификатором %s не существует.", bookingId));
         }
     }
@@ -214,7 +163,49 @@ public class BookingServiceImpl implements BookingService {
         } else if (state.equals("PAST")) {
             return State.PAST;
         } else {
-            throw new InvalidStateBookingException("Unknown state: " + state);
+            throw new BadRequestException("Unknown state: " + state);
+        }
+    }
+
+    public void fillBookingDto(LocalDateTime real, State stateAfterCheck, Collection<BookingDto> bookingDtos, Collection<Booking> temp) {
+        if (stateAfterCheck.equals(State.WAITING)) {
+            for (Booking booking : temp) {
+                if (booking.getStatus().equals(Status.WAITING)) {
+                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
+                }
+            }
+        } else if (stateAfterCheck.equals(State.REJECTED)) {
+            for (Booking booking : temp) {
+                if (booking.getStatus().equals(Status.REJECTED)) {
+                    bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
+                }
+            }
+        } else if (stateAfterCheck.equals(State.ALL)) {
+            for (Booking booking : temp) {
+                bookingDtos.add(BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem()));
+            }
+        } else if (stateAfterCheck.equals(State.CURRENT)) {
+            for (Booking booking : temp) {
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
+                if (bookingDtoAdd.getStart().isBefore(real)
+                        && bookingDtoAdd.getEnd().isAfter(real)) {
+                    bookingDtos.add(bookingDtoAdd);
+                }
+            }
+        } else if (stateAfterCheck.equals(State.PAST)) {
+            for (Booking booking : temp) {
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
+                if (bookingDtoAdd.getStart().isBefore(real) && bookingDtoAdd.getEnd().isBefore(real)) {
+                    bookingDtos.add(bookingDtoAdd);
+                }
+            }
+        } else if (stateAfterCheck.equals(State.FUTURE)) {
+            for (Booking booking : temp) {
+                BookingDto bookingDtoAdd = BookingMapper.toBookingDto(booking, booking.getBooker(), booking.getItem());
+                if (bookingDtoAdd.getStart().isAfter(real)) {
+                    bookingDtos.add(bookingDtoAdd);
+                }
+            }
         }
     }
 }

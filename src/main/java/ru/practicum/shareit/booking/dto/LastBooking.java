@@ -9,6 +9,8 @@ import lombok.*;
 public class LastBooking {
 
     String lastBooking;
+
     Integer id;
+
     Integer bookerId;
 }

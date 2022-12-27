@@ -9,6 +9,8 @@ import lombok.*;
 public class NextBooking {
 
     String nextBooking;
+
     Integer id;
+
     Integer bookerId;
 }

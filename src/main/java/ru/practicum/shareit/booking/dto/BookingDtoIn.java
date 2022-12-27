@@ -15,8 +15,12 @@ import java.time.LocalDateTime;
 public class BookingDtoIn {
 
     private int id;
+
     private LocalDateTime start;
+
     private LocalDateTime end;
+
     private int itemId;
+
     private Status status;
 }

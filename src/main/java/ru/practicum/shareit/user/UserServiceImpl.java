@@ -3,9 +3,8 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.IdItemOrUserNotExistException;
-import ru.practicum.shareit.exception.InvalidMaleUserException;
-
+import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.NotFoundException;
 
 import java.util.Collection;
 
@@ -40,8 +39,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(int userId) {
-        if (!checkUserId(userId)) {
-            throw new IdItemOrUserNotExistException(String.format(
+        if (!repository.existsById(userId)) {
+            throw new NotFoundException(String.format(
                     "Пользователь с данным id %s не зарегистрирован.", userId));
         }
         return repository.findUserByIdEquals(userId);
@@ -61,17 +60,7 @@ public class UserServiceImpl implements UserService {
 
     public void checkUser(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !(user.getEmail().contains("@"))) {
-            throw new InvalidMaleUserException("Введенный email отсутствует или некорректен");
+            throw new BadRequestException("Введенный email отсутствует или некорректен");
         }
-    }
-
-    public boolean checkUserId(int userId) {
-        boolean isExistUser = false;
-        for (User value : repository.findAll()) {
-            if (value.getId() == userId) {
-                isExistUser = true;
-            }
-        }
-        return isExistUser;
     }
 }

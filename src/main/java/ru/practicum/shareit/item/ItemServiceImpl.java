@@ -27,6 +27,9 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentsRepository commentsRepository;
 
+    private LastBooking lastBooking;
+    private NextBooking nextBooking;
+
     @Transactional
     @Override
     public Item createItem(Item item, int userId) {
@@ -39,9 +42,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item updateItem(Item item, int itemId, Integer userId) {
         if (userId == null) {
-            throw new EmptyHeaderUserId("Отсутствует заголовок 'X-Sharer-User-Id'");
+            throw new InternalServerErrorException("Отсутствует заголовок 'X-Sharer-User-Id'");
         } else if (!Objects.equals(itemRepository.findItemByIdEquals(itemId).getOwner().getId(), userId)) {
-            throw new InvalidHeaderUserId("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
+            throw new NotFoundException("Некорректный владелец item в заголовке 'X-Sharer-User-Id'");
         }
         Item itemInStorage = getItem(itemId, userId);
         Item itemUpdate = ItemMapper.toDtoItem(ItemMapper.toItemDto(item), itemInStorage);
@@ -51,29 +54,17 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item getItem(int itemId, int userId) {
+        lastBooking = null;
+        nextBooking = null;
         LocalDateTime real = LocalDateTime.now();
-        List<Booking> bookings = bookingRepository.findAll().stream().filter(x -> x.getItem().getId() == itemId).collect(Collectors.toList());
-        List<Comment> comments = commentsRepository.findAll().stream().filter(x -> x.getItem().getId() == itemId).collect(Collectors.toList());
+        List<Booking> bookings = bookingRepository.findAllByItem_Id(itemId);
+        List<Comment> comments = commentsRepository.findAllByItem_Id(itemId);
         Item send = itemRepository.findItemByIdEquals(itemId);
-        if (!checkItemId(itemId)) {
-            throw new IdItemOrUserNotExistException(String.format(
+        if (!itemRepository.existsById(itemId)) {
+            throw new NotFoundException(String.format(
                     "Вещь с данным id %s не зарегистрирована.", itemId));
         } else if (!bookings.isEmpty()) {
-            LastBooking lastBooking = null;
-            NextBooking nextBooking = null;
-            for (Booking booking : bookings) {
-                if (booking.getEnd().isBefore(real)) {
-                    lastBooking = BookingMapper.toLastBooking(booking);
-                    continue;
-                }
-                if (booking.getStart().isAfter(real)) {
-                    nextBooking = BookingMapper.toNextBooking(booking);
-                    continue;
-                }
-                if (lastBooking != null && nextBooking != null) {
-                    break;
-                }
-            }
+            setLastAndNextBooking(real, bookings);
             if (comments.size() != 0) {
                 for (Comment comment : comments) {
                     if (comment.getText() != null) {
@@ -99,32 +90,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<Item> findAllItem() {
-        return itemRepository.findAll();
-    }
-
-    @Override
     public Collection<Item> getAllItems(Integer userId) {
+        lastBooking = null;
+        nextBooking = null;
         LocalDateTime real = LocalDateTime.now();
-        List<Item> items = itemRepository.findAll().stream().filter(x -> x.getOwner().getId() == userId).collect(Collectors.toList());
+        List<Item> items = itemRepository.findAllByOwner_Id(userId);
         for (Item item : items) {
-            List<Booking> bookings = bookingRepository.findAll().stream().filter(x -> x.getItem().getId() == item.getId()).collect(Collectors.toList());
+            List<Booking> bookings = bookingRepository.findAllByItem_Id(item.getId());
             if (!bookings.isEmpty()) {
-                LastBooking lastBooking = null;
-                NextBooking nextBooking = null;
-                for (Booking booking : bookings) {
-                    if (booking.getEnd().isBefore(real)) {
-                        lastBooking = BookingMapper.toLastBooking(booking);
-                        continue;
-                    }
-                    if (booking.getStart().isAfter(real)) {
-                        nextBooking = BookingMapper.toNextBooking(booking);
-                        continue;
-                    }
-                    if (lastBooking != null && nextBooking != null) {
-                        break;
-                    }
-                }
+                setLastAndNextBooking(real, bookings);
                 if (userId.equals(item.getOwner().getId())) {
                     item.setLastBooking(lastBooking);
                     item.setNextBooking(nextBooking);
@@ -156,10 +130,10 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentDto createComment(Comment comment, int userId, int itemId) {
         if (comment.getText().isEmpty()) {
-            throw new EmptyCommentTextException("Пустой комментарий");
+            throw new BadRequestException("Пустой комментарий");
         }
         boolean flag = true;
-        List<Booking> test = bookingRepository.findAll().stream().filter(x -> (x.getItem().getId() == itemId) && (x.getBooker().getId() == userId)).collect(Collectors.toList());
+        List<Booking> test = bookingRepository.findAllByItem_IdAndAndBooker_Id(itemId, userId);
         for (Booking booking : test) {
             if (booking.getStatus().equals(Status.APPROVED) && booking.getStart().isBefore(LocalDateTime.now())
                     && booking.getEnd().isBefore(LocalDateTime.now())) {
@@ -167,7 +141,7 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         if (flag) {
-            throw new NotBookingForUserException(String.format("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
+            throw new BadRequestException(String.format("Отсутствуют бронирования у пользователя с идентификатором %s", userId));
         }
         comment.setAuthor(userRepository.findUserByIdEquals(userId));
         comment.setItem(itemRepository.findItemByIdEquals(itemId));
@@ -176,21 +150,26 @@ public class ItemServiceImpl implements ItemService {
 
     public void checkItem(Item item) {
         if (Objects.equals(item.getName(), "") || item.getDescription() == null || item.getAvailable() == null || item.getOwner().getId() == 0) {
-            throw new EmptyFieldItemException("Отсутствует имя, описание, статус или владелец");
-        } else if (userRepository.findAll().stream().noneMatch(x -> x.getId() == item.getOwner().getId())) {
-            throw new NotFoundObjectException(String.format(
+            throw new BadRequestException("Отсутствует имя, описание, статус или владелец");
+        } else if (!userRepository.existsById(item.getOwner().getId())) {
+            throw new NotFoundException(String.format(
                     "Владельца с идентификатором %s не существует.", item.getOwner()));
         }
     }
 
-    public boolean checkItemId(int itemId) {
-        boolean isExistUser = false;
-        for (Item value : itemRepository.findAll()) {
-            if (value.getId() == itemId) {
-                isExistUser = true;
+    public void setLastAndNextBooking(LocalDateTime real, List<Booking> bookings) {
+        for (Booking booking : bookings) {
+            if (booking.getEnd().isBefore(real)) {
+                lastBooking = BookingMapper.toLastBooking(booking);
+                continue;
+            }
+            if (booking.getStart().isAfter(real)) {
+                nextBooking = BookingMapper.toNextBooking(booking);
+                continue;
+            }
+            if (lastBooking != null && nextBooking != null) {
                 break;
             }
         }
-        return isExistUser;
     }
 }
